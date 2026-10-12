@@ -50,7 +50,7 @@ input,select,textarea,button{font-family:inherit;font-size:14px}
 .btn-danger{background:var(--red);color:#fff}.btn-danger:hover{background:#b91c1c}
 .btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}.btn-outline:hover{background:var(--bg)}
 .btn-accent{background:var(--accent);color:#fff}.btn-accent:hover{background:#6d28d9}
-.btn-sm{padding:4px 12px;font-size:12px}.btn-xs{padding:2px 8px;font-size:11px}
+.btn-sm{padding:4px 12px;font-size:12px}
 .btn-group{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
 .table-wrap{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:13.5px}
@@ -97,7 +97,6 @@ table tbody tr.drillable:hover td{background:#e0e7ff}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 .modal-content{background:#fff;border-radius:var(--radius);padding:28px 32px;width:820px;max-width:100%;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3);animation:slideUp .25s}
 @keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
-.modal-content h2{margin-bottom:16px}
 .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding-bottom:14px;border-bottom:2px solid var(--border)}
 .modal-header h2{font-size:19px;display:flex;align-items:center;gap:10px;margin:0}
 .modal-header h2 i{color:var(--primary-light)}
@@ -140,14 +139,12 @@ table tbody tr.drillable:hover td{background:#e0e7ff}
 .download-card p{font-size:13px;opacity:.8}
 .fsli-card{border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:12px;transition:.2s;cursor:pointer;background:#fff}
 .fsli-card:hover{border-color:var(--primary-light);box-shadow:0 6px 18px rgba(15,43,74,.1);transform:translateY(-2px)}
-.fsli-card.expanded{background:#f8fafc}
 .ega-chip{display:inline-block;background:var(--primary-lighter);color:var(--primary);padding:3px 10px;border-radius:20px;font-size:11px;margin:3px 3px 3px 0;cursor:pointer;transition:.15s}
 .ega-chip:hover{background:var(--primary);color:#fff}
 .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
 .info-item{padding:10px 14px;background:var(--bg);border-radius:8px}
 .info-item .lbl{font-size:11px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.5px}
 .info-item .val{font-size:14px;font-weight:600;margin-top:2px;color:var(--text)}
-.section-divider{height:1px;background:var(--border);margin:20px 0}
 .badge-pill{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;background:var(--primary-lighter);color:var(--primary);margin-left:6px}
 @media(max-width:768px){
 .sidebar{width:60px;padding:12px 0}.sidebar:hover{width:60px;padding-left:0}
@@ -209,6 +206,7 @@ table tbody tr.drillable:hover td{background:#e0e7ff}
 <div class="nav-item" data-view="completion"><i class="fas fa-check-double"></i><span>Completion</span></div>
 <div class="nav-item" data-view="eqr"><i class="fas fa-user-shield"></i><span>EQR</span></div>
 <div class="nav-section">Admin &amp; Downloads</div>
+<div class="nav-item" data-view="roadmap"><i class="fas fa-road"></i><span>Roadmap</span></div>
 <div class="nav-item" data-view="admin"><i class="fas fa-cog"></i><span>Admin</span></div>
 <div class="nav-item" data-view="downloads"><i class="fas fa-download"></i><span>Downloads</span></div>
 </nav>
@@ -222,7 +220,12 @@ table tbody tr.drillable:hover td{background:#e0e7ff}
 
 <script>
 /* ═══════════════════════════════════════════════════════════════
-   AUDIT STUDIO · ENTERPRISE · FULLY DRILLABLE EDITION
+   AUDIT STUDIO · ENTERPRISE · v1.2 (PATCHED)
+   Patches applied:
+   - P1: editEGA/editRisk/newEGA/newRisk now open editors directly
+   - P2: eng2 seeded with FSLIs, FSA, TB so engagement switching isn't blank
+   - P3: Real AI Disclosure Agent with pasted-text + file upload + sample loader
+   - P4: Roadmap view added to sidebar
    ═══════════════════════════════════════════════════════════════ */
 
 const DB={
@@ -264,7 +267,7 @@ function logout(){if(confirm('Logout?')){currentUser=null;document.getElementByI
 
 function toast(msg){const el=document.getElementById('toast');document.getElementById('toastMsg').textContent=msg;el.classList.add('show');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),2800)}
 
-function logTrail(action,detail){const id=DB.getCurrentEngId();if(!id)return;const t=DB.getAuditTrail(id);t.unshift({id:'at'+Date.now(),timestamp:new Date().toISOString(),user:currentUser?.name||'System',role:ROLE_LABELS[currentUser?.role]||'',action,detail});DB.setAuditTrail(id,t.slice(0,500))}
+function logTrail(action,detail){const id=DB.getCurrentEngId();if(!id)return;const t=DB.getAuditTrail(id);t.unshift({id:'at'+Date.now()+Math.random().toString(36).slice(2,5),timestamp:new Date().toISOString(),user:currentUser?.name||'System',role:ROLE_LABELS[currentUser?.role]||'',action,detail});DB.setAuditTrail(id,t.slice(0,500))}
 
 function notify(title,message){const n=DB.getNotifications();n.unshift({id:'n'+Date.now(),title,message,timestamp:new Date().toISOString(),read:false});DB.setNotifications(n.slice(0,100));updateNotifBadge()}
 function updateNotifBadge(){const n=DB.getNotifications().filter(x=>!x.read).length;const el=document.getElementById('notifCount');if(el){el.textContent=n>0?n:'';el.style.display=n>0?'inline-block':'none'}}
@@ -278,15 +281,35 @@ const LIBRARY={
 const GROUP_EGAS=[{phase:'Planning',name:'Group Consolidation Procedures'},{phase:'Planning',name:'Component Materiality Assessment'},{phase:'Planning',name:'Component Auditor Instructions'},{phase:'Execution',name:'Consolidation Testing'},{phase:'Execution',name:'Component Results Review'},{phase:'Completion',name:'Group Overall Conclusion'}];
 const PROFILE_EGAS={'Minimal':['KYC & Entity Understanding','Risk Assessment','Overall Audit Strategy'],'Basic':['KYC & Entity Understanding','Risk Assessment','Preliminary Risk Analytics','Fraud Risk Assessment','Overall Audit Strategy'],'OneForm':['KYC & Entity Understanding','Risk Assessment','Preliminary Risk Analytics','Fraud Risk Assessment','Going Concern Assessment','Overall Audit Strategy','Understanding Business Processes & Controls'],'Core':null};
 
-/* ─── SEED ─── */
+/* ═══════════════════════════════════════════════════════════════
+   PATCH 2 — SEED BOTH ENGAGEMENTS
+   ═══════════════════════════════════════════════════════════════ */
 function ensureSeed(){
 let engs=DB.getEngagements();
 if(!engs.length){
 const e1={id:'eng1',name:'Caribbean Vehicle Dealership Ltd',yearEnd:'2025-12-31',industry:'Automotive Retail',framework:'IFRS',isGroup:false,status:'Active',team:[],library:'Standard',components:[],profile:'Core',currency:'USD',budget:45000,created:new Date().toISOString()};
 const e2={id:'eng2',name:'Island Manufacturing Co.',yearEnd:'2025-06-30',industry:'Manufacturing',framework:'IFRS for SMEs',isGroup:false,status:'Active',team:[],library:'Standard',components:[],profile:'Core',currency:'USD',budget:38000,created:new Date().toISOString()};
 engs=[e1,e2];DB.setEngagements(engs);DB.setCurrentEngId(e1.id);
+
+// Seed eng1 (Caribbean Vehicle Dealership)
 const fslis=[{id:'fsli1',name:'Revenue',scopeStatus:'InScope',mappedAccounts:[]},{id:'fsli2',name:'Trade Receivables',scopeStatus:'InScope',mappedAccounts:[]},{id:'fsli3',name:'Inventory',scopeStatus:'InScope',mappedAccounts:[]},{id:'fsli4',name:'Property, Plant & Equipment',scopeStatus:'InScope',mappedAccounts:[]},{id:'fsli5',name:'Trade Payables',scopeStatus:'InScope',mappedAccounts:[]},{id:'fsli6',name:'Tax Liabilities',scopeStatus:'OutOfScope',mappedAccounts:[]},{id:'fsli7',name:'Cash & Cash Equivalents',scopeStatus:'InScope',mappedAccounts:[]}];
 DB.setFSLIs(e1.id,fslis);applyLibrary(e1.id,'Standard');seedFSA(e1.id,fslis);seedDemoData(e1.id);
+
+// Seed eng2 (Island Manufacturing) — PATCH 2
+const fslis2=[{id:'e2f1',name:'Revenue',scopeStatus:'InScope',mappedAccounts:[]},{id:'e2f2',name:'Trade Receivables',scopeStatus:'InScope',mappedAccounts:[]},{id:'e2f3',name:'Inventory',scopeStatus:'InScope',mappedAccounts:[]},{id:'e2f4',name:'Property, Plant & Equipment',scopeStatus:'InScope',mappedAccounts:[]},{id:'e2f5',name:'Trade Payables',scopeStatus:'InScope',mappedAccounts:[]},{id:'e2f6',name:'Cash & Cash Equivalents',scopeStatus:'InScope',mappedAccounts:[]},{id:'e2f7',name:'Cost of Goods Sold',scopeStatus:'InScope',mappedAccounts:[]}];
+DB.setFSLIs(e2.id,fslis2);seedFSA(e2.id,fslis2);
+DB.setTB(e2.id,{accounts:[
+{account:'1000 Cash & Bank',debit:180000,credit:0,mappedTo:'e2f6'},
+{account:'1200 Accounts Receivable',debit:340000,credit:0,mappedTo:'e2f2'},
+{account:'1300 Raw Materials',debit:220000,credit:0,mappedTo:'e2f3'},
+{account:'1310 Finished Goods',debit:300000,credit:0,mappedTo:'e2f3'},
+{account:'1500 Plant & Equipment',debit:2200000,credit:0,mappedTo:'e2f4'},
+{account:'2000 Accounts Payable',debit:0,credit:410000,mappedTo:'e2f5'},
+{account:'4000 Revenue',debit:0,credit:3100000,mappedTo:'e2f1'},
+{account:'5000 Cost of Goods Sold',debit:2100000,credit:0,mappedTo:'e2f7'},
+{account:'6000 Operating Expenses',debit:520000,credit:0,mappedTo:null}]});
+DB.setRisks(e2.id,[{id:'e2r1',description:'Inventory costing accuracy for raw materials',fsli:'e2f3',assertions:['Valuation','Accuracy'],response:'Test cost roll-up and standard cost variances',egaIds:[],riskLevel:'Medium',likelihood:'Medium',impact:'Medium'}]);
+DB.setMat(e2.id,{benchmark:'Revenue',benchmarkValue:3100000,percentage:0.7,overall:2170000,performance:1519000,trivial:217000,rationale:'Revenue-based benchmark for a manufacturing entity.'});
 }
 if(!DB.getCurrentEngId()&&DB.getEngagements().length)DB.setCurrentEngId(DB.getEngagements()[0].id);
 }
@@ -323,7 +346,7 @@ DB.setConfirmations(engId,[
 DB.setDocuments(engId,[
 {id:'d1',name:'Prior Year Audit Report.pdf',size:'2.4 MB',type:'pdf',uploader:'System Admin',uploaded:new Date(Date.now()-86400000*10).toISOString()},
 {id:'d2',name:'Engagement Letter.pdf',size:'340 KB',type:'pdf',uploader:'Alice Partner',uploaded:new Date(Date.now()-86400000*5).toISOString()}]);
-DB.setNotifications([{id:'n1',title:'Welcome to Audit Studio Enterprise',message:'Explore all drillable modules. Every stat card, table row, and heat map cell now opens detailed views.',timestamp:new Date().toISOString(),read:false}]);
+DB.setNotifications([{id:'n1',title:'Welcome to Audit Studio Enterprise',message:'Explore all drillable modules. Every stat card, table row, and heat map cell opens a detailed view. Try the AI Disclosure Agent in the Completion module.',timestamp:new Date().toISOString(),read:false}]);
 }
 
 function getEng(){const id=DB.getCurrentEngId();if(!id)return null;return DB.getEngagements().find(e=>e.id===id)||null}
@@ -334,16 +357,12 @@ function applyGroupAudit(engId,on){if(!on)return;const egas=DB.getEGAs(engId);co
 
 /* ══════════════ UNIVERSAL MODAL ══════════════ */
 function showDetail(title,icon,bodyHtml,actionsHtml=''){
-const id='detailModal';
-document.getElementById(id)?.remove();
+document.getElementById('detailModal')?.remove();
 const m=document.createElement('div');
-m.className='modal-overlay';m.id=id;
+m.className='modal-overlay';m.id='detailModal';
 m.onclick=e=>{if(e.target===m)closeDetail()};
 m.innerHTML=`<div class="modal-content">
-<div class="modal-header">
-<h2><i class="fas fa-${icon}"></i> ${title}</h2>
-<button class="modal-close" onclick="closeDetail()">&times;</button>
-</div>
+<div class="modal-header"><h2><i class="fas fa-${icon}"></i> ${title}</h2><button class="modal-close" onclick="closeDetail()">&times;</button></div>
 <div id="modalBody">${bodyHtml}</div>
 ${actionsHtml?`<div class="btn-group" style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);">${actionsHtml}</div>`:''}
 </div>`;
@@ -357,20 +376,20 @@ document.querySelectorAll('.sidebar .nav-item').forEach(el=>el.classList.remove(
 document.querySelector(`.sidebar .nav-item[data-view="${view}"]`)?.classList.add('active');
 const container=document.getElementById('mainContent');
 const eng=DB.getEngagements().length?`<div class="eng-switcher"><span style="font-weight:500;font-size:13px;color:var(--text-secondary);">Engagement:</span><select id="engSwitcher" onchange="switchEng(this.value)">${DB.getEngagements().map(e=>`<option value="${e.id}" ${e.id===DB.getCurrentEngId()?'selected':''}>${e.name}</option>`).join('')}</select></div>`:'';
-const titles={dashboard:'Dashboard',portfolio:'Portfolio Dashboard',notifications:'Notifications',fileinfo:'File Info',team:'Team',timebudget:'Time & Budget','planning-file':'Planning File',fsa:'FSA Worksheet',materiality:'Materiality',tb:'Trial Balance & Mapping',risks:'Risks & Heat Map',execution:'Execution',reviewpoints:'Review Points',analytics:'Data Analytics',sampling:'Sampling',confirmations:'Confirmations',consolidation:'Consolidation',vault:'Document Vault',audittrail:'Audit Trail',completion:'Completion',eqr:'Engagement Quality Review',admin:'Administration',downloads:'Downloads'};
-const icons={dashboard:'chart-pie',portfolio:'briefcase',notifications:'bell',fileinfo:'folder-open',team:'users',timebudget:'clock','planning-file':'file-alt',fsa:'th-list',materiality:'ruler',tb:'table',risks:'triangle-exclamation',execution:'play',reviewpoints:'comments',analytics:'chart-line',sampling:'dice',confirmations:'envelope',consolidation:'sitemap',vault:'vault',audittrail:'history',completion:'check-double',eqr:'user-shield',admin:'cog',downloads:'download'};
+const titles={dashboard:'Dashboard',portfolio:'Portfolio Dashboard',notifications:'Notifications',fileinfo:'File Info',team:'Team',timebudget:'Time & Budget','planning-file':'Planning File',fsa:'FSA Worksheet',materiality:'Materiality',tb:'Trial Balance & Mapping',risks:'Risks & Heat Map',execution:'Execution',reviewpoints:'Review Points',analytics:'Data Analytics',sampling:'Sampling',confirmations:'Confirmations',consolidation:'Consolidation',vault:'Document Vault',audittrail:'Audit Trail',completion:'Completion',eqr:'Engagement Quality Review',admin:'Administration',downloads:'Downloads',roadmap:'Product Roadmap'};
+const icons={dashboard:'chart-pie',portfolio:'briefcase',notifications:'bell',fileinfo:'folder-open',team:'users',timebudget:'clock','planning-file':'file-alt',fsa:'th-list',materiality:'ruler',tb:'table',risks:'triangle-exclamation',execution:'play',reviewpoints:'comments',analytics:'chart-line',sampling:'dice',confirmations:'envelope',consolidation:'sitemap',vault:'vault',audittrail:'history',completion:'check-double',eqr:'user-shield',admin:'cog',downloads:'download',roadmap:'road'};
 container.innerHTML=`<div class="page-header"><h1><i class="fas fa-${icons[view]||'file'}"></i> ${titles[view]||view}</h1>${eng}</div><div id="viewContent"></div>`;
 const vc=document.getElementById('viewContent');
-const fns={dashboard:renderDashboard,portfolio:renderPortfolio,notifications:renderNotifications,fileinfo:renderFileInfo,team:renderTeam,timebudget:renderTimeBudget,'planning-file':renderPlanningFile,fsa:renderFSA,materiality:renderMateriality,tb:renderTB,risks:renderRisks,execution:renderExecution,reviewpoints:renderReviewPoints,analytics:renderAnalytics,sampling:renderSampling,confirmations:renderConfirmations,consolidation:renderConsolidation,vault:renderVault,audittrail:renderAuditTrail,completion:renderCompletion,eqr:renderEQR,admin:renderAdmin,downloads:renderDownloads};
+const fns={dashboard:renderDashboard,portfolio:renderPortfolio,notifications:renderNotifications,fileinfo:renderFileInfo,team:renderTeam,timebudget:renderTimeBudget,'planning-file':renderPlanningFile,fsa:renderFSA,materiality:renderMateriality,tb:renderTB,risks:renderRisks,execution:renderExecution,reviewpoints:renderReviewPoints,analytics:renderAnalytics,sampling:renderSampling,confirmations:renderConfirmations,consolidation:renderConsolidation,vault:renderVault,audittrail:renderAuditTrail,completion:renderCompletion,eqr:renderEQR,admin:renderAdmin,downloads:renderDownloads,roadmap:renderRoadmap};
 if(fns[view])fns[view](vc);else vc.innerHTML='<p>View not found.</p>';
 updateNotifBadge();
 }
 
-function switchEng(id){DB.setCurrentEngId(id);renderView(document.querySelector('.sidebar .nav-item.active')?.dataset.view||'dashboard')}
+function switchEng(id){DB.setCurrentEngId(id);window._upcoming=null;window._anaData=null;window._samples=null;renderView(document.querySelector('.sidebar .nav-item.active')?.dataset.view||'dashboard')}
 
 function statusBadge(s){const cls={'NotStarted':'not-started','InProgress':'in-progress','InReview':'in-review','Completed':'completed','InScope':'in-scope','OutOfScope':'out-of-scope','Override':'override','High':'high','Medium':'medium','Low':'low','Open':'open','Resolved':'resolved','Sent':'in-progress','Received':'completed','Pending':'not-started'}[s]||'not-started';return `<span class="status-badge ${cls}">${s}</span>`}
 
-/* ══════════════ DASHBOARD (drillable) ══════════════ */
+/* ══════════════ DASHBOARD ══════════════ */
 function renderDashboard(c){
 const eng=getEng();if(!eng){c.innerHTML='<p>No engagement selected.</p>';return}
 const egas=DB.getEGAs(eng.id);
@@ -382,7 +401,6 @@ const risks=DB.getRisks(eng.id);
 const highRisks=risks.filter(r=>r.riskLevel==='High').length;
 const mat=DB.getMat(eng.id);
 const phases=['Planning','Execution','Completion'];
-
 c.innerHTML=`
 <div class="grid-4" style="margin-bottom:20px;">
 <div class="stat-card" onclick="drillTotalEgas()"><div class="value">${egas.length}</div><div class="label">Total EGAs</div></div>
@@ -396,7 +414,7 @@ c.innerHTML=`
 </div>
 <div class="card">
 <div class="card-title"><i class="fas fa-layer-group"></i> Phase Progress <span class="badge-pill">Click phase to view EGAs</span></div>
-${phases.map(p=>{const f=egas.filter(e=>e.phase===p);const d=f.filter(e=>e.status==='Completed').length;return `<div style="margin-bottom:12px;cursor:pointer;" onclick="drillPhase('${p}')" class="drillable-row">
+${phases.map(p=>{const f=egas.filter(e=>e.phase===p);const d=f.filter(e=>e.status==='Completed').length;return `<div style="margin-bottom:12px;cursor:pointer;" onclick="drillPhase('${p}')">
 <div style="display:flex;justify-content:space-between;font-size:13px;"><strong>${p}</strong><span>${d}/${f.length}</span></div>
 <div class="progress-bar"><div class="fill" style="width:${f.length?(d/f.length*100):0}%"></div></div>
 </div>`}).join('')}
@@ -418,7 +436,6 @@ ${!egas.length?'<tr><td colspan="6" class="text-muted">No EGAs yet.</td></tr>':'
 </div>`;
 }
 
-/* ─── Dashboard Drill-downs ─── */
 function drillTotalEgas(){const eng=getEng();const egas=DB.getEGAs(eng.id);showDetail('All EGAs','list','<div class="table-wrap"><table><thead><tr><th>Name</th><th>Phase</th><th>Status</th><th>Due</th></tr></thead><tbody>'+egas.map(e=>`<tr class="drillable" onclick="closeDetail();drillEga('${e.id}')"><td>${e.name}</td><td>${e.phase}</td><td>${statusBadge(e.status)}</td><td>${e.dueDate||'—'}</td></tr>`).join('')+'</tbody></table></div>')}
 function drillEgasByStatus(status){const eng=getEng();const filter=status==='InProgress'?e=>['InProgress','InReview'].includes(e.status):e=>e.status===status;const egas=DB.getEGAs(eng.id).filter(filter);showDetail(`${status} EGAs (${egas.length})`,'tasks','<div class="table-wrap"><table><thead><tr><th>Name</th><th>Phase</th><th>Due</th><th>Allocated</th></tr></thead><tbody>'+egas.map(e=>`<tr class="drillable" onclick="closeDetail();drillEga('${e.id}')"><td>${e.name}</td><td>${e.phase}</td><td>${e.dueDate||'—'}</td><td>${e.allocatedTo||'—'}</td></tr>`).join('')+'</tbody></table></div>')}
 function drillOverdue(){const eng=getEng();const egas=DB.getEGAs(eng.id).filter(e=>e.dueDate&&new Date(e.dueDate)<new Date()&&e.status!=='Completed');showDetail(`Overdue EGAs (${egas.length})`,'clock','<div class="table-wrap"><table><thead><tr><th>Name</th><th>Due</th><th>Status</th><th>Allocated</th></tr></thead><tbody>'+egas.map(e=>`<tr class="drillable" onclick="closeDetail();drillEga('${e.id}')"><td>${e.name}</td><td style="color:var(--red);font-weight:600;">${e.dueDate}</td><td>${statusBadge(e.status)}</td><td>${e.allocatedTo||'—'}</td></tr>`).join('')+'</tbody></table></div>')}
@@ -427,7 +444,7 @@ function drillMateriality(){const eng=getEng();const m=DB.getMat(eng.id);showDet
 
 function drillPhase(phase){const eng=getEng();const egas=DB.getEGAs(eng.id).filter(e=>e.phase===phase);showDetail(`${phase} Phase EGAs (${egas.length})`,'layer-group','<div class="table-wrap"><table><thead><tr><th>Name</th><th>Status</th><th>Due</th><th>Allocated</th></tr></thead><tbody>'+egas.map(e=>`<tr class="drillable" onclick="closeDetail();drillEga('${e.id}')"><td>${e.name}</td><td>${statusBadge(e.status)}</td><td>${e.dueDate||'—'}</td><td>${e.allocatedTo||'—'}</td></tr>`).join('')+'</tbody></table></div>')}
 
-/* ══════════════ EGA DRILL-DOWN (universal) ══════════════ */
+/* ══════════════ EGA DRILL-DOWN ══════════════ */
 function drillEga(id){
 const eng=getEng();
 const e=DB.getEGAs(eng.id).find(x=>x.id===id);
@@ -448,8 +465,7 @@ ${e.findings?`<div style="margin-bottom:14px;"><strong style="font-size:12px;col
 ${e.conclusion?`<div style="margin-bottom:14px;"><strong style="font-size:12px;color:var(--text-secondary);text-transform:uppercase;">Conclusion</strong><p style="margin-top:6px;">${e.conclusion}</p></div>`:''}
 ${(e.evidence&&e.evidence.length)?`<div style="margin-bottom:14px;"><strong style="font-size:12px;color:var(--text-secondary);text-transform:uppercase;">Evidence</strong><div style="margin-top:6px;">${e.evidence.map(ev=>`<span class="ega-chip"><i class="fas fa-paperclip"></i> ${ev}</span>`).join('')}</div></div>`:''}
 ${e.source?`<div class="text-muted" style="font-size:11px;">Source: ${e.source}</div>`:''}`;
-const actions=editable?`<button class="btn btn-primary" onclick="closeDetail();editEGA('${e.id}')"><i class="fas fa-edit"></i> Edit EGA</button>
-<button class="btn btn-outline" onclick="closeDetail()">Close</button>`:'<button class="btn btn-outline" onclick="closeDetail()">Close</button>';
+const actions=editable?`<button class="btn btn-primary" onclick="closeDetail();editEGA('${e.id}')"><i class="fas fa-edit"></i> Edit EGA</button><button class="btn btn-outline" onclick="closeDetail()">Close</button>`:'<button class="btn btn-outline" onclick="closeDetail()">Close</button>';
 showDetail(e.name,'clipboard-check',body,actions);
 }
 
@@ -544,8 +560,7 @@ ${editable?`<form onsubmit="addComp(event)" style="margin-top:14px;display:flex;
 <input name="ownership" type="number" class="form-control" value="100" placeholder="Own %" style="width:100px;" />
 <input name="materiality" type="number" class="form-control" placeholder="Materiality" required style="width:140px;" />
 <button type="submit" class="btn btn-primary"><i class="fas fa-plus"></i> Add</button></form>`:''}
-</div>`:''}
-<div id="rfCont"></div>`;
+</div>`:''}`;
 }
 function drillComponent(i){const eng=getEng();const x=eng.components[i];if(!x)return;showDetail(x.name,'building',`<div class="info-grid"><div class="info-item"><div class="lbl">Ownership</div><div class="val">${x.ownership||100}%</div></div><div class="info-item"><div class="lbl">Component Materiality</div><div class="val">$${(x.materiality||0).toLocaleString()}</div></div></div><p class="text-muted">Component-level audit procedures would be performed at this entity and reported back to the group engagement team.</p>`)}
 
@@ -618,20 +633,17 @@ ${editable?`<div class="card">
 </div></form></div>`:''}
 <div class="card">
 <div class="card-title">Time Entries <span class="badge-pill">${entries.length}</span></div>
-${entries.length?`<div class="table-wrap"><table><thead><tr><th>Date</th><th>User</th><th>Hours</th><th>Task</th><th>Notes</th><th></th></tr></thead>
-<tbody>${entries.map((t,i)=>`<tr class="drillable" onclick="drillTimeEntry('${t.id}')">
-<td>${t.date}</td><td>${t.user}</td><td>${t.hours}</td><td>${t.task}</td><td>${t.notes||'—'}</td>
-<td><i class="fas fa-chevron-right" style="color:var(--primary-light);"></i></td>
-</tr>`).join('')}</tbody>
+${entries.length?`<div class="table-wrap"><table><thead><tr><th>Date</th><th>User</th><th>Hours</th><th>Task</th><th>Notes</th></tr></thead>
+<tbody>${entries.map(t=>`<tr><td>${t.date}</td><td>${t.user}</td><td>${t.hours}</td><td>${t.task}</td><td>${t.notes||'—'}</td></tr>`).join('')}</tbody>
 </table></div>`:'<p class="text-muted">No time entries.</p>'}
 </div>`;
 }
-function drillTimeEntries(){const eng=getEng();const entries=DB.getTimeEntries(eng.id);const byTask={};entries.forEach(e=>{byTask[e.task]=(byTask[e.task]||0)+e.hours});showDetail('Hours by Task','clock',Object.entries(byTask).map(([t,h])=>`<div style="margin-bottom:12px;"><div style="display:flex;justify-content:space-between;"><strong>${t}</strong><span>${h.toFixed(1)}h</span></div><div class="progress-bar" style="margin-top:4px;"><div class="fill" style="width:${(h/Math.max(...Object.values(byTask))*100)}%"></div></div></div>`).join(''))}
+function drillTimeEntries(){const eng=getEng();const entries=DB.getTimeEntries(eng.id);const byTask={};entries.forEach(e=>{byTask[e.task]=(byTask[e.task]||0)+e.hours});const max=Math.max(...Object.values(byTask),1);showDetail('Hours by Task','clock',Object.entries(byTask).map(([t,h])=>`<div style="margin-bottom:12px;"><div style="display:flex;justify-content:space-between;"><strong>${t}</strong><span>${h.toFixed(1)}h</span></div><div class="progress-bar" style="margin-top:4px;"><div class="fill" style="width:${(h/max*100)}%"></div></div></div>`).join('')||'<p class="text-muted">No entries.</p>')}
 function drillUtilization(){const eng=getEng();const entries=DB.getTimeEntries(eng.id);const total=entries.reduce((s,e)=>s+e.hours,0);const budget=eng.budget||1;const pct=Math.round(total/budget*100);showDetail('Budget Utilization','chart-line',`<div class="info-grid"><div class="info-item"><div class="lbl">Total Hours</div><div class="val">${total.toFixed(1)}</div></div><div class="info-item"><div class="lbl">Budget</div><div class="val">${budget}</div></div><div class="info-item"><div class="lbl">Utilization</div><div class="val" style="color:${pct>100?'var(--red)':'var(--green)'};">${pct}%</div></div><div class="info-item"><div class="lbl">Remaining</div><div class="val">${Math.max(0,budget-total).toFixed(1)}h</div></div></div>`)}
 
 function logTime(e){e.preventDefault();const eng=getEng();const f=e.target;const entries=DB.getTimeEntries(eng.id);entries.push({id:'t'+Date.now(),user:currentUser.name,date:f.date.value,hours:parseFloat(f.hours.value),task:f.task.value,notes:f.notes.value});DB.setTimeEntries(eng.id,entries);logTrail('Time logged',`${f.hours.value}h on ${f.task.value}`);renderView('timebudget')}
 
-/* ══════════════ PLANNING FILE (fully tabbed) ══════════════ */
+/* ══════════════ PLANNING FILE ══════════════ */
 let ss=null;
 function renderPlanningFile(c){
 const eng=getEng();if(!eng)return;
@@ -646,17 +658,14 @@ if(!wb){wb={profile:eng.profile||'Core',activeSheet:'Acceptance & Continuance',s
 const editable=canEdit();
 const sheetNames=Object.keys(wb.sheets);
 if(!wb.activeSheet||!wb.sheets[wb.activeSheet])wb.activeSheet=sheetNames[0];
-
 c.innerHTML=`
 <div class="card">
 <div class="card-title"><i class="fas fa-cog"></i> Engagement Profile Selector</div>
 <div style="display:flex;gap:12px;align-items:end;flex-wrap:wrap;">
-<div class="form-group" style="flex:1;min-width:200px;">
-<label>Profile</label>
+<div class="form-group" style="flex:1;min-width:200px;"><label>Profile</label>
 <select id="profileSel" class="form-control" ${!editable?'disabled':''} onchange="setProfile(this.value)">
 ${['Minimal','Basic','OneForm','Core'].map(p=>`<option ${wb.profile===p?'selected':''}>${p}</option>`).join('')}
-</select>
-</div>
+</select></div>
 <button class="btn btn-primary" onclick="applyProfileEGAs()" ${!editable?'disabled':''}><i class="fas fa-sync"></i> Apply Profile EGAs</button>
 </div>
 <p class="text-muted" style="margin-top:8px;">Selecting a profile loads corresponding Planning-phase EGAs.</p>
@@ -690,35 +699,13 @@ const st=document.getElementById('ssStatus');if(st)st.innerHTML=`Double-click an
 
 function loadSheet(name){
 const eng=getEng();const wb=DB.getPlanning(eng.id);
-// Save current sheet first
-if(ss){
-const d=ss.getData()[0];
-const maxR=Math.max(...Object.keys(d.rows||{}).map(Number),0);
-const maxC=Math.max(...Object.values(d.rows||{}).flatMap(r=>Object.keys(r.cells||{}).map(Number)),0);
-const rows=[];
-for(let r=0;r<=maxR;r++){const row=[];for(let c=0;c<=maxC;c++)row.push(d.rows[r]?.cells?.[c]?.text||'');rows.push(row)}
-wb.sheets[wb.activeSheet]=rows;
-}
-wb.activeSheet=name;
-DB.setPlanning(eng.id,wb);
-// Update tab visuals
+if(ss){const d=ss.getData()[0];const maxR=Math.max(...Object.keys(d.rows||{}).map(Number),0);const maxC=Math.max(...Object.values(d.rows||{}).flatMap(r=>Object.keys(r.cells||{}).map(Number)),0);const rows=[];for(let r=0;r<=maxR;r++){const row=[];for(let c=0;c<=maxC;c++)row.push(d.rows[r]?.cells?.[c]?.text||'');rows.push(row)}wb.sheets[wb.activeSheet]=rows}
+wb.activeSheet=name;DB.setPlanning(eng.id,wb);
 document.querySelectorAll('#sheetTabs .sheet-tab').forEach(t=>t.classList.toggle('active',t.textContent===name));
 initSS(wb);
 }
 
-function saveWorkbook(){
-if(!ss)return;
-const eng=getEng();const wb=DB.getPlanning(eng.id);
-const d=ss.getData()[0];
-const maxR=Math.max(...Object.keys(d.rows||{}).map(Number),0);
-const maxC=Math.max(...Object.values(d.rows||{}).flatMap(r=>Object.keys(r.cells||{}).map(Number)),0);
-const rows=[];
-for(let r=0;r<=maxR;r++){const row=[];for(let c=0;c<=maxC;c++)row.push(d.rows[r]?.cells?.[c]?.text||'');rows.push(row)}
-wb.sheets[wb.activeSheet]=rows;
-DB.setPlanning(eng.id,wb);
-logTrail('Planning workbook saved',wb.activeSheet);
-toast('Workbook saved.');
-}
+function saveWorkbook(){if(!ss)return;const eng=getEng();const wb=DB.getPlanning(eng.id);const d=ss.getData()[0];const maxR=Math.max(...Object.keys(d.rows||{}).map(Number),0);const maxC=Math.max(...Object.values(d.rows||{}).flatMap(r=>Object.keys(r.cells||{}).map(Number)),0);const rows=[];for(let r=0;r<=maxR;r++){const row=[];for(let c=0;c<=maxC;c++)row.push(d.rows[r]?.cells?.[c]?.text||'');rows.push(row)}wb.sheets[wb.activeSheet]=rows;DB.setPlanning(eng.id,wb);logTrail('Planning workbook saved',wb.activeSheet);toast('Workbook saved.')}
 
 function setProfile(p){const eng=getEng();const wb=DB.getPlanning(eng.id);wb.profile=p;DB.setPlanning(eng.id,wb);const engs=DB.getEngagements();const i=engs.findIndex(x=>x.id===eng.id);if(i>=0){engs[i].profile=p;DB.setEngagements(engs)}toast(`Profile: ${p}`)}
 
@@ -779,7 +766,7 @@ c.innerHTML=`
 </div></form>
 </div>
 <div class="grid-4" style="margin-bottom:20px;">
-<div class="stat-card no-drill"><div class="value" style="color:${balanced&&accounts.length?'var(--green)':'var(--red)'};">${accounts.length?(balanced?'Balanced':'Unbalanced'):'—'}</div><div class="label">Balance</div></div>
+<div class="stat-card no-drill"><div class="value" style="font-size:18px;color:${balanced&&accounts.length?'var(--green)':'var(--red)'};">${accounts.length?(balanced?'Balanced':'Unbalanced'):'—'}</div><div class="label">Balance</div></div>
 <div class="stat-card" onclick="drillAllAccounts()"><div class="value">${accounts.length}</div><div class="label">Accounts</div></div>
 <div class="stat-card" onclick="drillMapped()"><div class="value" style="color:var(--green);">${mappedCount}</div><div class="label">Mapped</div></div>
 <div class="stat-card" onclick="drillUnmapped()"><div class="value" style="color:var(--amber);">${accounts.length-mappedCount}</div><div class="label">Unmapped</div></div>
@@ -799,9 +786,9 @@ ${accounts.length?`<div class="table-wrap"><table>
 function drillAllAccounts(){const eng=getEng();const accs=DB.getTB(eng.id).accounts||[];showDetail(`All Accounts (${accs.length})`,'table','<div class="table-wrap"><table><thead><tr><th>Account</th><th>Debit</th><th>Credit</th></tr></thead><tbody>'+accs.map(a=>`<tr class="drillable" onclick="closeDetail();drillTBAccount('${a.account.replace(/'/g,"\\'")}')"><td>${a.account}</td><td>$${a.debit.toFixed(2)}</td><td>$${a.credit.toFixed(2)}</td></tr>`).join('')+'</tbody></table></div>')}
 function drillMapped(){const eng=getEng();const accs=(DB.getTB(eng.id).accounts||[]).filter(a=>a.mappedTo);showDetail(`Mapped Accounts (${accs.length})`,'check-circle','<div class="table-wrap"><table><thead><tr><th>Account</th><th>FSLI</th></tr></thead><tbody>'+accs.map(a=>`<tr><td>${a.account}</td><td>${DB.getFSLIs(eng.id).find(f=>f.id===a.mappedTo)?.name||'—'}</td></tr>`).join('')+'</tbody></table></div>')}
 function drillUnmapped(){const eng=getEng();const accs=(DB.getTB(eng.id).accounts||[]).filter(a=>!a.mappedTo);showDetail(`Unmapped Accounts (${accs.length})`,'exclamation-circle',accs.length?'<div class="table-wrap"><table><thead><tr><th>Account</th><th>Debit</th><th>Credit</th></tr></thead><tbody>'+accs.map(a=>`<tr><td>${a.account}</td><td>$${a.debit.toFixed(2)}</td><td>$${a.credit.toFixed(2)}</td></tr>`).join('')+'</tbody></table></div>':'<p class="text-muted">All accounts mapped.</p>')}
-function drillTBAccount(name){const eng=getEng();const a=(DB.getTB(eng.id).accounts||[]).find(x=>x.account===name);if(!a)return;const fslis=DB.getFSLIs(eng.id);const options=fslis.map(f=>`<option value="${f.id}" ${a.mappedTo===f.id?'selected':''}>${f.name}</option>`).join('');showDetail(a.account,'file-invoice',`<div class="info-grid"><div class="info-item"><div class="lbl">Debit</div><div class="val">$${a.debit.toFixed(2)}</div></div><div class="info-item"><div class="lbl">Credit</div><div class="val">$${a.credit.toFixed(2)}</div></div><div class="info-item"><div class="lbl">Net Balance</div><div class="val">$${(a.debit-a.credit).toFixed(2)}</div></div></div><div class="form-group"><label>Mapped FSLI</label><select class="form-control" onchange="mapAcct('${a.account.replace(/'/g,"\\'")}', this.value)"><option value="">— Unmapped —</option>${options}</select></div>`,canEdit()?`<button class="btn btn-outline" onclick="closeDetail()">Close</button>`:'<button class="btn btn-outline" onclick="closeDetail()">Close</button>')}
+function drillTBAccount(name){const eng=getEng();const a=(DB.getTB(eng.id).accounts||[]).find(x=>x.account===name);if(!a)return;const fslis=DB.getFSLIs(eng.id);const options=fslis.map(f=>`<option value="${f.id}" ${a.mappedTo===f.id?'selected':''}>${f.name}</option>`).join('');showDetail(a.account,'file-invoice',`<div class="info-grid"><div class="info-item"><div class="lbl">Debit</div><div class="val">$${a.debit.toFixed(2)}</div></div><div class="info-item"><div class="lbl">Credit</div><div class="val">$${a.credit.toFixed(2)}</div></div><div class="info-item"><div class="lbl">Net Balance</div><div class="val">$${(a.debit-a.credit).toFixed(2)}</div></div></div><div class="form-group"><label>Mapped FSLI</label><select class="form-control" onchange="mapAcct('${a.account.replace(/'/g,"\\'")}', this.value)"><option value="">— Unmapped —</option>${options}</select></div>`,`<button class="btn btn-outline" onclick="closeDetail()">Close</button>`)}
 
-function uploadTB(e){e.preventDefault();const file=document.getElementById('tbFile').files[0];if(!file)return;const rd=new FileReader();rd.onload=ev=>{try{const wb=XLSX.read(new Uint8Array(ev.target.result),{type:'array'});const sheet=wb.Sheets[wb.SheetNames[0]];const json=XLSX.utils.sheet_to_json(sheet);let accounts=json.map(row=>{let account='',debit=0,credit=0;Object.keys(row).forEach(k=>{const v=row[k];if(typeof v==='string'&&v.length>0&&!account)account=v;if(typeof v==='number'){const lk=k.toLowerCase();if(lk.includes('debit'))debit=v;else if(lk.includes('credit'))credit=v}});return{account,debit,credit,mappedTo:null}}).filter(a=>a.account);if(!accounts.length){alert('No valid accounts.');return}const eng=getEng();const fslis=DB.getFSLIs(eng.id);accounts=accounts.map(a=>{const l=a.account.toLowerCase();const map={'Revenue':['revenue','sales','income'],'Trade Receivables':['receivable','debtor'],'Inventory':['inventory','stock'],'Property, Plant & Equipment':['property','plant','equipment','ppe','fixed asset'],'Trade Payables':['payable','creditor'],'Tax Liabilities':['tax','vat'],'Cash & Cash Equivalents':['cash','bank']};for(const[nm,kws]of Object.entries(map)){if(kws.some(k=>l.includes(k))){const f=fslis.find(x=>x.name===nm);if(f)return{...a,mappedTo:f.id}}}return a});DB.setTB(eng.id,{accounts});logTrail('TB imported',`${accounts.length} accounts`);toast(`${accounts.length} accounts imported & auto-mapped.`);renderView('tb')}catch(err){alert('Error: '+err.message)}};rd.readAsArrayBuffer(file)}
+function uploadTB(e){e.preventDefault();const file=document.getElementById('tbFile').files[0];if(!file)return;const rd=new FileReader();rd.onload=ev=>{try{const wb=XLSX.read(new Uint8Array(ev.target.result),{type:'array'});const sheet=wb.Sheets[wb.SheetNames[0]];const json=XLSX.utils.sheet_to_json(sheet);let accounts=json.map(row=>{let account='',debit=0,credit=0;Object.keys(row).forEach(k=>{const v=row[k];if(typeof v==='string'&&v.length>0&&!account)account=v;if(typeof v==='number'){const lk=k.toLowerCase();if(lk.includes('debit'))debit=v;else if(lk.includes('credit'))credit=v}});return{account,debit,credit,mappedTo:null}}).filter(a=>a.account);if(!accounts.length){alert('No valid accounts found. Ensure columns: Account, Debit, Credit.');return}const eng=getEng();const fslis=DB.getFSLIs(eng.id);accounts=accounts.map(a=>{const l=a.account.toLowerCase();const map={'Revenue':['revenue','sales','income'],'Trade Receivables':['receivable','debtor'],'Inventory':['inventory','stock'],'Property, Plant & Equipment':['property','plant','equipment','ppe','fixed asset'],'Trade Payables':['payable','creditor'],'Tax Liabilities':['tax','vat'],'Cash & Cash Equivalents':['cash','bank']};for(const[nm,kws]of Object.entries(map)){if(kws.some(k=>l.includes(k))){const f=fslis.find(x=>x.name===nm);if(f)return{...a,mappedTo:f.id}}}return a});DB.setTB(eng.id,{accounts});logTrail('TB imported',`${accounts.length} accounts`);toast(`${accounts.length} accounts imported & auto-mapped.`);renderView('tb')}catch(err){alert('Error: '+err.message)}};rd.readAsArrayBuffer(file)}
 
 function mapAcct(name,fsliId){const eng=getEng();const tb=DB.getTB(eng.id);const a=tb.accounts.find(x=>x.account===name);if(!a)return;a.mappedTo=fsliId||undefined;DB.setTB(eng.id,tb);logTrail('Account mapped',`${name} → ${fsliId||'unmapped'}`);closeDetail();renderView('tb')}
 
@@ -853,15 +840,14 @@ ${risks.length?`<h4 style="margin-top:16px;margin-bottom:8px;font-size:13px;">Li
 function calcMat(f){const bv=parseFloat(f.bv.value)||0;const pct=parseFloat(f.pct.value)||0;const ov=bv*(pct/100);f.overall.value=ov.toFixed(2);f.perf.value=(ov*0.7).toFixed(2);f.trivial.value=(ov*0.1).toFixed(2)}
 function saveMat(e){e.preventDefault();const f=e.target;const eng=getEng();DB.setMat(eng.id,{benchmark:f.benchmark.value,benchmarkValue:parseFloat(f.bv.value),percentage:parseFloat(f.pct.value),overall:parseFloat(f.overall.value),performance:parseFloat(f.perf.value),trivial:parseFloat(f.trivial.value),rationale:f.rat.value});logTrail('Materiality updated',`$${f.overall.value}`);toast('Materiality saved.')}
 
-/* ══════════════ RISKS + HEAT MAP ══════════════ */
+/* ══════════════ RISKS ══════════════ */
 function renderRisks(c){
 const eng=getEng();if(!eng)return;
-const risks=DB.getRisks(eng.id);const fslis=DB.getFSLIs(eng.id);const egas=DB.getEGAs(eng.id);const editable=canEdit();
+const risks=DB.getRisks(eng.id);const fslis=DB.getFSLIs(eng.id);const editable=canEdit();
 const assertions=['Existence','Completeness','Accuracy','Valuation','Rights & Obligations','Cut-off','Classification','Presentation'];
 const heat={};risks.forEach(r=>{const key=`${r.impact||'Medium'}-${r.likelihood||'Medium'}`;heat[key]=(heat[key]||0)+1});
 const levels={High:3,Medium:2,Low:1};
 const heatCell=(imp,lik)=>{const score=(levels[imp]||2)*(levels[lik]||2);const bg=score>=7?'#dc2626':score>=4?'#f59e0b':score>=2?'#fbbf24':'#16a34a';const count=heat[`${imp}-${lik}`]||0;return `<div class="heat-cell ${count?'':'empty'}" style="background:${bg};" onclick="drillHeatCell('${imp}','${lik}')" title="${imp} impact × ${lik} likelihood">${count||0}</div>`};
-
 c.innerHTML=`
 <div style="display:flex;justify-content:space-between;margin-bottom:16px;">
 <span class="text-muted">${risks.length} risks · Click any row, matrix cell, or heat map cell for details</span>
@@ -926,9 +912,29 @@ ${linkedEgas.length?`<div style="margin-top:16px;"><strong style="font-size:12px
 
 function drillRiskAssertion(riskId,assertion){const eng=getEng();const r=DB.getRisks(eng.id).find(x=>x.id===riskId);if(!r)return;showDetail(`${assertion} — Risk Link`,'link',`<p><strong>Risk:</strong> ${r.description}</p><p class="mt-12"><strong>Assertion:</strong> ${assertion}</p><p class="text-muted mt-12">This assertion is addressed by the planned audit response.${r.response?' Response: '+r.response:''}</p>`)}
 
-function newRisk(){const eng=getEng();const risks=DB.getRisks(eng.id);const r={id:'risk'+Date.now(),description:'',fsli:'',assertions:[],response:'',egaIds:[],riskLevel:'Medium',likelihood:'Medium',impact:'Medium'};risks.push(r);DB.setRisks(eng.id,risks);window._editRisk=r.id;renderView('risks')}
-function editRisk(id){window._editRisk=id;renderView('risks')}
-function showRiskEditor(id,c){const eng=getEng();const r=DB.getRisks(eng.id).find(x=>x.id===id);if(!r)return;const fslis=DB.getFSLIs(eng.id);const egas=DB.getEGAs(eng.id);const editable=canEdit();const assertions=['Existence','Completeness','Accuracy','Valuation','Rights & Obligations','Cut-off','Classification','Presentation'];const body=`<form onsubmit="saveRisk(event, '${r.id}')">
+/* ═══════════════════════════════════════════════════════════════
+   PATCH 1 — newRisk now opens editor directly
+   ═══════════════════════════════════════════════════════════════ */
+function newRisk(){
+const eng=getEng();if(!eng)return;
+const risks=DB.getRisks(eng.id);
+const r={id:'risk'+Date.now(),description:'',fsli:'',assertions:[],response:'',egaIds:[],riskLevel:'Medium',likelihood:'Medium',impact:'Medium'};
+risks.push(r);DB.setRisks(eng.id,risks);
+logTrail('Risk created','New risk');
+renderView('risks');
+showRiskEditor(r.id);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PATCH 1 — editRisk opens editor directly
+   ═══════════════════════════════════════════════════════════════ */
+function editRisk(id){closeDetail();showRiskEditor(id)}
+
+function showRiskEditor(id){
+const eng=getEng();const r=DB.getRisks(eng.id).find(x=>x.id===id);if(!r)return;
+const fslis=DB.getFSLIs(eng.id);const egas=DB.getEGAs(eng.id);const editable=canEdit();
+const assertions=['Existence','Completeness','Accuracy','Valuation','Rights & Obligations','Cut-off','Classification','Presentation'];
+const body=`<form onsubmit="saveRisk(event, '${r.id}')">
 <div class="form-group"><label>Description</label><input name="desc" class="form-control" value="${r.description}" ${!editable?'disabled':''} required /></div>
 <div class="grid-2">
 <div class="form-group"><label>FSLI</label><select name="fsli" class="form-control" ${!editable?'disabled':''}><option value="">—</option>${fslis.map(f=>`<option value="${f.id}" ${r.fsli===f.id?'selected':''}>${f.name}</option>`).join('')}</select></div>
@@ -940,7 +946,10 @@ function showRiskEditor(id,c){const eng=getEng();const r=DB.getRisks(eng.id).fin
 <div class="form-group"><label>Planned Response</label><textarea name="resp" rows="2" class="form-control" ${!editable?'disabled':''}>${r.response}</textarea></div>
 <div class="form-group"><label>Linked EGAs</label><input name="egas" class="form-control" value="${(r.egaIds||[]).join(', ')}" ${!editable?'disabled':''} /><div class="text-muted" style="margin-top:4px;font-size:11px;">Available: ${egas.map(e=>e.id+': '+e.name).join(' · ')}</div></div>
 ${editable?`<div class="btn-group"><button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save</button><button type="button" class="btn btn-danger" onclick="delRisk('${r.id}')"><i class="fas fa-trash"></i> Delete</button></div>`:''}
-</form>`;showDetail(`Edit Risk`,'edit',body)}
+</form>`;
+showDetail('Edit Risk','edit',body);
+}
+
 function saveRisk(e,id){e.preventDefault();const f=e.target;const eng=getEng();const risks=DB.getRisks(eng.id);const i=risks.findIndex(r=>r.id===id);if(i<0)return;const assertions=['Existence','Completeness','Accuracy','Valuation','Rights & Obligations','Cut-off','Classification','Presentation'];risks[i]={...risks[i],description:f.desc.value,fsli:f.fsli.value,assertions:assertions.filter(a=>f['a_'+a]?.checked),response:f.resp.value,riskLevel:f.lvl.value,likelihood:f.lik.value,impact:f.imp.value,egaIds:f.egas.value.split(',').map(s=>s.trim()).filter(Boolean)};DB.setRisks(eng.id,risks);logTrail('Risk updated',f.desc.value.slice(0,50));closeDetail();toast('Risk saved.');renderView('risks')}
 function delRisk(id){if(!confirm('Delete risk?'))return;const eng=getEng();DB.setRisks(eng.id,DB.getRisks(eng.id).filter(r=>r.id!==id));closeDetail();logTrail('Risk deleted',id);renderView('risks')}
 
@@ -971,9 +980,30 @@ ${egas.length?`<div class="table-wrap"><table>
 </table></div>`:'<p class="text-muted">No Execution EGAs.</p>'}
 </div>`;
 }
-function newEGA(phase){const eng=getEng();const egas=DB.getEGAs(eng.id);const e={id:'ega'+Date.now(),phase,name:'New EGA',objective:'',workPerformed:'',evidence:[],findings:'',conclusion:'',preparer:'',preparerDate:'',reviewer:'',reviewerDate:'',status:'NotStarted',dueDate:'',allocatedTo:''};egas.push(e);DB.setEGAs(eng.id,egas);window._editEga=e.id;renderView(phase==='Planning'?'planning-file':phase==='Completion'?'completion':'execution')}
-function editEGA(id){window._editEga=id;renderView(document.querySelector('.sidebar .nav-item.active')?.dataset.view||'execution')}
-function showEGAEditor(id,c){const eng=getEng();const e=DB.getEGAs(eng.id).find(x=>x.id===id);if(!e)return;const editable=canEdit();const body=`<form onsubmit="saveEGA(event, '${e.id}')">
+
+/* ═══════════════════════════════════════════════════════════════
+   PATCH 1 — newEGA opens editor directly
+   ═══════════════════════════════════════════════════════════════ */
+function newEGA(phase){
+const eng=getEng();if(!eng)return;
+const egas=DB.getEGAs(eng.id);
+const e={id:'ega'+Date.now(),phase,name:'New EGA',objective:'',workPerformed:'',evidence:[],findings:'',conclusion:'',preparer:'',preparerDate:'',reviewer:'',reviewerDate:'',status:'NotStarted',dueDate:'',allocatedTo:''};
+egas.push(e);DB.setEGAs(eng.id,egas);
+logTrail('EGA created','New EGA in '+phase);
+const v=phase==='Planning'?'planning-file':phase==='Completion'?'completion':'execution';
+renderView(v);
+showEGAEditor(e.id);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PATCH 1 — editEGA opens editor directly
+   ═══════════════════════════════════════════════════════════════ */
+function editEGA(id){closeDetail();showEGAEditor(id)}
+
+function showEGAEditor(id){
+const eng=getEng();const e=DB.getEGAs(eng.id).find(x=>x.id===id);if(!e)return;
+const editable=canEdit();
+const body=`<form onsubmit="saveEGA(event, '${e.id}')">
 <div class="grid-2">
 <div class="form-group"><label>Name</label><input name="name" class="form-control" value="${e.name}" ${!editable?'disabled':''} /></div>
 <div class="form-group"><label>Phase</label><select name="phase" class="form-control" ${!editable?'disabled':''}>${['Planning','Execution','Completion'].map(p=>`<option ${e.phase===p?'selected':''}>${p}</option>`).join('')}</select></div>
@@ -992,9 +1022,12 @@ function showEGAEditor(id,c){const eng=getEng();const e=DB.getEGAs(eng.id).find(
 <div class="form-group"><label>Reviewer</label><input name="rev" class="form-control" value="${e.reviewer||''}" ${!editable?'disabled':''} /></div>
 <div class="form-group"><label>Reviewer Date</label><input name="revD" type="date" class="form-control" value="${e.reviewerDate||''}" ${!editable?'disabled':''} /></div>
 </div>
-<div class="form-group"><label>Evidence</label><input name="ev" class="form-control" value="${(e.evidence||[]).join(', ')}" ${!editable?'disabled':''} /></div>
+<div class="form-group"><label>Evidence (comma separated)</label><input name="ev" class="form-control" value="${(e.evidence||[]).join(', ')}" ${!editable?'disabled':''} /></div>
 ${editable?`<div class="btn-group"><button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save</button><button type="button" class="btn btn-danger" onclick="delEGA('${e.id}')"><i class="fas fa-trash"></i> Delete</button></div>`:''}
-</form>`;showDetail(`Edit EGA — ${e.name}`,'edit',body)}
+</form>`;
+showDetail(`Edit EGA — ${e.name}`,'edit',body);
+}
+
 function saveEGA(e,id){e.preventDefault();const f=e.target;const eng=getEng();const egas=DB.getEGAs(eng.id);const i=egas.findIndex(x=>x.id===id);if(i<0)return;egas[i]={...egas[i],name:f.name.value,phase:f.phase.value,status:f.status.value,dueDate:f.due.value,allocatedTo:f.alloc.value,linkedFSLI:f.fsli.value,objective:f.obj.value,workPerformed:f.wp.value,findings:f.find.value,conclusion:f.concl.value,preparer:f.prep.value,preparerDate:f.prepD.value,reviewer:f.rev.value,reviewerDate:f.revD.value,evidence:f.ev.value.split(',').map(s=>s.trim()).filter(Boolean)};DB.setEGAs(eng.id,egas);logTrail('EGA saved',f.name.value);closeDetail();toast('EGA saved.');renderView(document.querySelector('.sidebar .nav-item.active')?.dataset.view||'execution')}
 function delEGA(id){if(!confirm('Delete EGA?'))return;const eng=getEng();DB.setEGAs(eng.id,DB.getEGAs(eng.id).filter(x=>x.id!==id));closeDetail();logTrail('EGA deleted',id);renderView('execution')}
 
@@ -1055,12 +1088,12 @@ ${highRisk.length?`<div class="table-wrap"><table><thead><tr><th>Account</th><th
 </div>`;
 window._anaData={accounts,benford,pct,expected,dups,highRisk};
 }
-function drillAnalysis(){const d=window._anaData;showDetail('Account Analysis Summary','chart-line',`<div class="info-grid"><div class="info-item"><div class="lbl">Total Accounts</div><div class="val">${d.accounts.length}</div></div><div class="info-item"><div class="lbl">Total Debit</div><div class="val">$${d.accounts.reduce((s,a)=>s+a.debit,0).toLocaleString()}</div></div><div class="info-item"><div class="lbl">Total Credit</div><div class="val">$${d.accounts.reduce((s,a)=>s+a.credit,0).toLocaleString()}</div></div><div class="info-item"><div class="lbl">Avg Account Value</div><div class="val">$${(d.accounts.reduce((s,a)=>s+Math.abs(a.debit-a.credit),0)/d.accounts.length||0).toLocaleString()}</div></div></div>`)}
-function drillDups(){const d=window._anaData;showDetail(`Duplicate Detection (${d.dups.length})`,'copy',d.dups.length?`<div class="table-wrap"><table><thead><tr><th>Account 1</th><th>Account 2</th></tr></thead><tbody>${d.dups.map((x,i)=>`<tr class="drillable" onclick="drillDup(${i})"><td>${x.a1}</td><td>${x.a2}</td></tr>`).join('')}</tbody></table></div>`:'<p class="text-muted">No duplicates detected.</p>')}
-function drillDup(i){const d=window._anaData;const x=d.dups[i];if(!x)return;const a1=d.accounts.find(a=>a.account===x.a1);const a2=d.accounts.find(a=>a.account===x.a2);showDetail('Duplicate Account Pair','copy',`<div class="grid-2"><div class="info-item"><div class="lbl">Account 1</div><div class="val">${x.a1}</div><div class="text-muted" style="margin-top:4px;">Dr $${a1?.debit.toFixed(2)} · Cr $${a1?.credit.toFixed(2)}</div></div><div class="info-item"><div class="lbl">Account 2</div><div class="val">${x.a2}</div><div class="text-muted" style="margin-top:4px;">Dr $${a2?.debit.toFixed(2)} · Cr $${a2?.credit.toFixed(2)}</div></div></div><p class="text-muted mt-12">These accounts normalize to the same identifier. Investigate whether they represent the same balance or legitimate separate accounts.</p>`)}
-function drillHighRiskAccts(){const d=window._anaData;showDetail(`High-Risk Accounts (${d.highRisk.length})`,'exclamation-triangle',d.highRisk.length?`<div class="table-wrap"><table><thead><tr><th>Account</th><th>Debit</th><th>Credit</th></tr></thead><tbody>${d.highRisk.map((a,i)=>`<tr class="drillable" onclick="drillHighRiskAcct(${i})"><td>${a.account}</td><td>$${a.debit.toFixed(2)}</td><td>$${a.credit.toFixed(2)}</td></tr>`).join('')}</tbody></table></div>`:'<p class="text-muted">No high-risk accounts.</p>')}
-function drillHighRiskAcct(i){const a=window._anaData.highRisk[i];if(!a)return;showDetail(a.account,'exclamation-triangle',`<div class="info-grid"><div class="info-item"><div class="lbl">Debit</div><div class="val">$${a.debit.toFixed(2)}</div></div><div class="info-item"><div class="lbl">Credit</div><div class="val">$${a.credit.toFixed(2)}</div></div></div><p class="text-muted mt-12">This account exceeds the $500K threshold and involves cash/suspense characteristics. Consider additional journal entry testing.</p>`)}
-function drillBenfordDigit(d){const a=window._anaData;const actual=a.pct[d-1];const expected=a.expected[d-1];const items=a.accounts.filter(x=>{const v=Math.max(x.debit,x.credit);if(v<=0)return false;const str=String(Math.floor(v)).replace(/[^1-9]/,'');return parseInt(str[0]||'0')===d});showDetail(`Benford Digit ${d}`,'chart-bar',`<div class="info-grid"><div class="info-item"><div class="lbl">Actual %</div><div class="val">${actual.toFixed(1)}%</div></div><div class="info-item"><div class="lbl">Expected %</div><div class="val">${expected}%</div></div><div class="info-item"><div class="lbl">Deviation</div><div class="val" style="color:${Math.abs(actual-expected)>5?'var(--red)':'var(--green)'};">${(actual-expected).toFixed(1)}%</div></div><div class="info-item"><div class="lbl">Count</div><div class="val">${items.length}</div></div></div><h4 style="margin-top:16px;font-size:13px;">Accounts starting with ${d}</h4><div class="table-wrap"><table><thead><tr><th>Account</th><th>Debit</th><th>Credit</th></tr></thead><tbody>${items.slice(0,25).map(x=>`<tr><td>${x.account}</td><td>$${x.debit.toFixed(2)}</td><td>$${x.credit.toFixed(2)}</td></tr>`).join('')}${items.length>25?`<tr><td colspan="3" class="text-muted">… ${items.length-25} more</td></tr>`:''}</tbody></table></div>`)}
+function drillAnalysis(){const d=window._anaData;if(!d)return;showDetail('Account Analysis Summary','chart-line',`<div class="info-grid"><div class="info-item"><div class="lbl">Total Accounts</div><div class="val">${d.accounts.length}</div></div><div class="info-item"><div class="lbl">Total Debit</div><div class="val">$${d.accounts.reduce((s,a)=>s+a.debit,0).toLocaleString()}</div></div><div class="info-item"><div class="lbl">Total Credit</div><div class="val">$${d.accounts.reduce((s,a)=>s+a.credit,0).toLocaleString()}</div></div><div class="info-item"><div class="lbl">Avg Account Value</div><div class="val">$${(d.accounts.reduce((s,a)=>s+Math.abs(a.debit-a.credit),0)/d.accounts.length||0).toLocaleString()}</div></div></div>`)}
+function drillDups(){const d=window._anaData;if(!d)return;showDetail(`Duplicate Detection (${d.dups.length})`,'copy',d.dups.length?`<div class="table-wrap"><table><thead><tr><th>Account 1</th><th>Account 2</th></tr></thead><tbody>${d.dups.map((x,i)=>`<tr class="drillable" onclick="drillDup(${i})"><td>${x.a1}</td><td>${x.a2}</td></tr>`).join('')}</tbody></table></div>`:'<p class="text-muted">No duplicates detected.</p>')}
+function drillDup(i){const d=window._anaData;if(!d)return;const x=d.dups[i];if(!x)return;const a1=d.accounts.find(a=>a.account===x.a1);const a2=d.accounts.find(a=>a.account===x.a2);showDetail('Duplicate Account Pair','copy',`<div class="grid-2"><div class="info-item"><div class="lbl">Account 1</div><div class="val">${x.a1}</div><div class="text-muted" style="margin-top:4px;">Dr $${a1?.debit.toFixed(2)||'0.00'} · Cr $${a1?.credit.toFixed(2)||'0.00'}</div></div><div class="info-item"><div class="lbl">Account 2</div><div class="val">${x.a2}</div><div class="text-muted" style="margin-top:4px;">Dr $${a2?.debit.toFixed(2)||'0.00'} · Cr $${a2?.credit.toFixed(2)||'0.00'}</div></div></div><p class="text-muted mt-12">These accounts normalize to the same identifier. Investigate whether they represent the same balance or legitimate separate accounts.</p>`)}
+function drillHighRiskAccts(){const d=window._anaData;if(!d)return;showDetail(`High-Risk Accounts (${d.highRisk.length})`,'exclamation-triangle',d.highRisk.length?`<div class="table-wrap"><table><thead><tr><th>Account</th><th>Debit</th><th>Credit</th></tr></thead><tbody>${d.highRisk.map((a,i)=>`<tr class="drillable" onclick="drillHighRiskAcct(${i})"><td>${a.account}</td><td>$${a.debit.toFixed(2)}</td><td>$${a.credit.toFixed(2)}</td></tr>`).join('')}</tbody></table></div>`:'<p class="text-muted">No high-risk accounts.</p>')}
+function drillHighRiskAcct(i){const d=window._anaData;if(!d)return;const a=d.highRisk[i];if(!a)return;showDetail(a.account,'exclamation-triangle',`<div class="info-grid"><div class="info-item"><div class="lbl">Debit</div><div class="val">$${a.debit.toFixed(2)}</div></div><div class="info-item"><div class="lbl">Credit</div><div class="val">$${a.credit.toFixed(2)}</div></div></div><p class="text-muted mt-12">This account exceeds the $500K threshold and involves cash/suspense characteristics. Consider additional journal entry testing.</p>`)}
+function drillBenfordDigit(d){const a=window._anaData;if(!a)return;const actual=a.pct[d-1];const expected=a.expected[d-1];const items=a.accounts.filter(x=>{const v=Math.max(x.debit,x.credit);if(v<=0)return false;const str=String(Math.floor(v)).replace(/[^1-9]/,'');return parseInt(str[0]||'0')===d});showDetail(`Benford Digit ${d}`,'chart-bar',`<div class="info-grid"><div class="info-item"><div class="lbl">Actual %</div><div class="val">${actual.toFixed(1)}%</div></div><div class="info-item"><div class="lbl">Expected %</div><div class="val">${expected}%</div></div><div class="info-item"><div class="lbl">Deviation</div><div class="val" style="color:${Math.abs(actual-expected)>5?'var(--red)':'var(--green)'};">${(actual-expected).toFixed(1)}%</div></div><div class="info-item"><div class="lbl">Count</div><div class="val">${items.length}</div></div></div><h4 style="margin-top:16px;font-size:13px;">Accounts starting with ${d}</h4><div class="table-wrap"><table><thead><tr><th>Account</th><th>Debit</th><th>Credit</th></tr></thead><tbody>${items.slice(0,25).map(x=>`<tr><td>${x.account}</td><td>$${x.debit.toFixed(2)}</td><td>$${x.credit.toFixed(2)}</td></tr>`).join('')}${items.length>25?`<tr><td colspan="3" class="text-muted">… ${items.length-25} more</td></tr>`:''}</tbody></table></div>`)}
 
 /* ══════════════ SAMPLING ══════════════ */
 function renderSampling(c){
@@ -1085,7 +1118,7 @@ ${samples.length?samples.map((s,i)=>`<div class="card">
 </div>`).join(''):'<div class="card"><p class="text-muted">No samples generated yet.</p></div>'}`;
 window._samples=samples;
 }
-function drillSample(i){const s=window._samples[i];if(!s)return;showDetail(`Sample #${i+1} Detail`,'dice',`<div class="info-grid">
+function drillSample(i){const s=window._samples?.[i];if(!s)return;showDetail(`Sample #${i+1} Detail`,'dice',`<div class="info-grid">
 <div class="info-item"><div class="lbl">Population Size</div><div class="val">${s.pop}</div></div>
 <div class="info-item"><div class="lbl">Sample Size</div><div class="val">${s.sampleSize}</div></div>
 <div class="info-item"><div class="lbl">Confidence</div><div class="val">${(s.conf*100).toFixed(0)}%</div></div>
@@ -1097,7 +1130,7 @@ function drillSample(i){const s=window._samples[i];if(!s)return;showDetail(`Samp
 <div style="margin-top:10px;">${s.selected.map(n=>`<span class="ega-chip">#${n}</span>`).join('')}</div>
 <h4 style="margin-top:16px;font-size:13px;">Method</h4>
 <p class="text-muted">${s.method} — Starting from a random point, every ${s.interval}th item is selected until ${s.sampleSize} items are chosen.</p>`)}
-function createSample(e){e.preventDefault();const f=e.target;const eng=getEng();const pop=parseInt(f.pop.value);const conf=parseFloat(f.conf.value);const tol=parseFloat(f.tol.value);const exp=parseFloat(f.exp.value);let factor=conf===0.95?3.0:conf===0.99?4.6:2.3;let size=Math.ceil((factor/(tol/100))*(1+exp/100));size=Math.min(size,pop);const interval=Math.floor(pop/size);const selected=[];let start=Math.floor(Math.random()*interval)+1;for(let i=0;i<size;i++)selected.push(start+i*interval);const samples=DB.getSampling(eng.id);samples.push({id:'s'+Date.now(),timestamp:new Date().toISOString(),pop,conf,tol,exp,sampleSize:size,method:'Systematic (Monetary Unit)',interval,selected});DB.setSampling(eng.id,samples);logTrail('Sample generated',`n=${size}`);toast(`Sample of ${size} items.`);renderView('sampling')}
+function createSample(e){e.preventDefault();const f=e.target;const eng=getEng();const pop=parseInt(f.pop.value);const conf=parseFloat(f.conf.value);const tol=parseFloat(f.tol.value);const exp=parseFloat(f.exp.value);let factor=conf===0.95?3.0:conf===0.99?4.6:2.3;let size=Math.ceil((factor/(tol/100))*(1+exp/100));size=Math.min(size,pop);const interval=Math.max(1,Math.floor(pop/size));const selected=[];let start=Math.floor(Math.random()*interval)+1;for(let i=0;i<size;i++)selected.push(start+i*interval);const samples=DB.getSampling(eng.id);samples.push({id:'s'+Date.now(),timestamp:new Date().toISOString(),pop,conf,tol,exp,sampleSize:size,method:'Systematic (Monetary Unit)',interval,selected});DB.setSampling(eng.id,samples);logTrail('Sample generated',`n=${size}`);toast(`Sample of ${size} items.`);renderView('sampling')}
 
 /* ══════════════ CONFIRMATIONS ══════════════ */
 function renderConfirmations(c){
@@ -1224,31 +1257,246 @@ ${egas.length?`<div class="table-wrap"><table>
 </div>
 <div class="card">
 <div class="card-title"><i class="fas fa-robot"></i> AI Disclosure Checklist Agent</div>
-<p class="text-muted">Analyze financial statements against ${eng.framework||'IFRS'}.</p>
-<div style="display:flex;gap:12px;margin-top:12px;flex-wrap:wrap;">
-<input type="file" id="dscFile" class="form-control" accept=".pdf,.txt,.docx,.xlsx" style="flex:1;min-width:200px;" />
-<button class="btn btn-accent" onclick="runDsc()"><i class="fas fa-magic"></i> Run AI Analysis</button>
+<p class="text-muted">Paste the text of your draft financial statements below, or upload a plain-text/CSV file, then click Analyze. The agent reads the text and cross-checks against <strong>${eng.framework||'IFRS'}</strong> required disclosures.</p>
+<div class="form-group" style="margin-top:12px;">
+<label>Draft financial statement text (paste here)</label>
+<textarea id="dscText" rows="7" class="form-control" placeholder="Example:&#10;Statement of Financial Position as at 31 December 2025&#10;Cash and cash equivalents 250,000...&#10;Revenue 2,400,000...&#10;Significant accounting policies...&#10;Basis of preparation..."></textarea>
 </div>
+<div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+<span class="text-muted">— OR —</span>
+<input type="file" id="dscFile" class="form-control" accept=".txt,.csv,.md" style="flex:1;min-width:180px;" />
+<button class="btn btn-accent" onclick="runDscReal()"><i class="fas fa-magic"></i> Analyze</button>
+<button class="btn btn-outline" onclick="loadDscDemo()"><i class="fas fa-vial"></i> Load Sample</button>
+</div>
+<div id="dscPreview" class="text-muted mt-12" style="font-size:12px;"></div>
 </div>
 <div class="card">
 <div class="card-title">Final Sign-Off</div>
 ${editable?`<button class="btn btn-success" onclick="finalSO()"><i class="fas fa-signature"></i> Final Sign-Off</button>`:'<p class="text-muted">Insufficient permission.</p>'}
 </div>`;
 }
-function runDsc(){const eng=getEng();const framework=eng.framework||'IFRS';const present=['Statement of Financial Position (IAS 1.54)','Statement of Profit or Loss and OCI (IAS 1.81A)','Statement of Changes in Equity (IAS 1.106)','Statement of Cash Flows (IAS 1.111)','Significant Accounting Policies (IAS 1.117)','Revenue Recognition (IFRS 15.110)','Lease Disclosures (IFRS 16.51)'];const missing=[{item:'Segment Reporting',citation:'IFRS 8.20-24',suggestion:'Disclose operating segments, products/services, geography, major customers.'},{item:'Financial Instruments Risk',citation:'IFRS 7.31-42',suggestion:'Include qualitative and quantitative risk disclosures.'},{item:'Related Party Transactions',citation:'IAS 24.17-22',suggestion:'Disclose relationships, transactions, balances.'},{item:'Going Concern',citation:'IAS 1.25-26',suggestion:'Explicitly state going concern assumption.'}];const incorrect=[{item:'Revenue disaggregation',citation:'IFRS 15.114-115',suggestion:'Further disaggregate into categories showing nature, amount, timing.'}];const body=`
+
+/* ═══════════════════════════════════════════════════════════════
+   PATCH 3 — REAL AI DISCLOSURE CHECKLIST AGENT
+   ═══════════════════════════════════════════════════════════════ */
+const REQUIRED_DISCLOSURES={
+'IFRS':[
+{item:'Statement of Financial Position',citation:'IAS 1.54',kw:['statement of financial position','balance sheet']},
+{item:'Statement of Profit or Loss and OCI',citation:'IAS 1.81A',kw:['profit or loss','comprehensive income','income statement']},
+{item:'Statement of Changes in Equity',citation:'IAS 1.106',kw:['changes in equity','statement of changes']},
+{item:'Statement of Cash Flows',citation:'IAS 1.111',kw:['cash flow','cash flows','statement of cash']},
+{item:'Significant Accounting Policies',citation:'IAS 1.117',kw:['accounting polic','significant polic','basis of preparation','basis of presentation']},
+{item:'Going Concern',citation:'IAS 1.25-26',kw:['going concern']},
+{item:'Revenue Recognition (IFRS 15)',citation:'IFRS 15.110-115',kw:['revenue','ifrs 15','performance obligation','contract with customer']},
+{item:'Leases (IFRS 16)',citation:'IFRS 16.51-60',kw:['lease','ifrs 16','right-of-use','right of use','lessee']},
+{item:'Financial Instruments (IFRS 7)',citation:'IFRS 7.31-42',kw:['financial instrument','ifrs 7','credit risk','liquidity risk','market risk']},
+{item:'Segment Reporting (IFRS 8)',citation:'IFRS 8.20-24',kw:['segment','ifrs 8','operating segment']},
+{item:'Related Party Transactions (IAS 24)',citation:'IAS 24.17-22',kw:['related part','ias 24']},
+{item:'Subsequent Events (IAS 10)',citation:'IAS 10',kw:['subsequent event','ias 10','after the reporting period']},
+{item:'Property, Plant & Equipment (IAS 16)',citation:'IAS 16',kw:['property, plant','property plant','ppe','ias 16','depreciation']},
+{item:'Impairment (IAS 36)',citation:'IAS 36',kw:['impairment','ias 36','recoverable amount']},
+{item:'Income Taxes (IAS 12)',citation:'IAS 12',kw:['income tax','deferred tax','ias 12']},
+{item:'Inventories (IAS 2)',citation:'IAS 2',kw:['inventor','ias 2']},
+{item:'Provisions & Contingencies (IAS 37)',citation:'IAS 37',kw:['provision','contingent','ias 37']},
+{item:'Employee Benefits (IAS 19)',citation:'IAS 19',kw:['employee benefit','pension','post-employment','ias 19']},
+{item:'Earnings Per Share (IAS 33)',citation:'IAS 33',kw:['earnings per share','eps','ias 33']},
+{item:'Fair Value Measurement (IFRS 13)',citation:'IFRS 13',kw:['fair value','ifrs 13','level 1','level 2','level 3']}
+],
+'IFRS for SMEs':[
+{item:'Statement of Financial Position',citation:'SME IAS 4',kw:['statement of financial position','balance sheet']},
+{item:'Statement of Comprehensive Income',citation:'SME IAS 5',kw:['comprehensive income','profit or loss']},
+{item:'Statement of Changes in Equity',citation:'SME IAS 6',kw:['changes in equity']},
+{item:'Statement of Cash Flows',citation:'SME IAS 7',kw:['cash flow','cash flows']},
+{item:'Accounting Policies',citation:'SME IAS 8',kw:['accounting polic','basis of preparation']},
+{item:'Going Concern',citation:'SME IAS 3',kw:['going concern']},
+{item:'Revenue',citation:'SME IAS 23',kw:['revenue']},
+{item:'Inventories',citation:'SME IAS 13',kw:['inventor']},
+{item:'Property, Plant & Equipment',citation:'SME IAS 17',kw:['property, plant','property plant','ppe']},
+{item:'Related Party Disclosures',citation:'SME IAS 33',kw:['related part']}
+],
+'US GAAP':[
+{item:'Balance Sheet',citation:'ASC 210',kw:['balance sheet','statement of financial position']},
+{item:'Income Statement',citation:'ASC 220',kw:['income statement','statement of operations']},
+{item:'Statement of Cash Flows',citation:'ASC 230',kw:['cash flow','cash flows']},
+{item:'Accounting Policies',citation:'ASC 235',kw:['accounting polic','basis of presentation']},
+{item:'Revenue Recognition',citation:'ASC 606',kw:['revenue','asc 606','performance obligation']},
+{item:'Leases',citation:'ASC 842',kw:['lease','asc 842','right-of-use','right of use']},
+{item:'Financial Instruments',citation:'ASC 320-825',kw:['financial instrument','fair value','investment']},
+{item:'Income Taxes',citation:'ASC 740',kw:['income tax','deferred tax']},
+{item:'Inventory',citation:'ASC 330',kw:['inventor']},
+{item:'Going Concern',citation:'ASC 205-40',kw:['going concern']},
+{item:'Segment Reporting',citation:'ASC 280',kw:['segment']},
+{item:'Related Party Disclosures',citation:'ASC 850',kw:['related part']},
+{item:'Subsequent Events',citation:'ASC 855',kw:['subsequent event']},
+{item:'Earnings Per Share',citation:'ASC 260',kw:['earnings per share','eps']}
+],
+'IPSAS':[
+{item:'Statement of Financial Position',citation:'IPSAS 1',kw:['statement of financial position','balance sheet']},
+{item:'Statement of Financial Performance',citation:'IPSAS 1',kw:['financial performance','surplus','deficit']},
+{item:'Statement of Cash Flows',citation:'IPSAS 2',kw:['cash flow','cash flows']},
+{item:'Accounting Policies',citation:'IPSAS 3',kw:['accounting polic','basis of preparation']},
+{item:'Revenue from Exchange Transactions',citation:'IPSAS 9',kw:['revenue','exchange transaction']},
+{item:'Revenue from Non-Exchange Transactions',citation:'IPSAS 23',kw:['non-exchange','non exchange','tax revenue','grants']},
+{item:'Property, Plant & Equipment',citation:'IPSAS 17',kw:['property, plant','property plant','ppe']},
+{item:'Going Concern',citation:'IPSAS 1',kw:['going concern']}
+]
+};
+
+const DSC_WARNINGS={
+'revenue':{ifMissing:'performance obligation',flag:'Revenue recognized but no "performance obligation" language detected — IFRS 15 / ASC 606 may require further disaggregation.'},
+'lease':{ifMissing:'right-of-use',flag:'Leases mentioned but no "right-of-use" asset language — IFRS 16 / ASC 842 lease disclosures may be incomplete.'},
+'financial instrument':{ifMissing:'credit risk',flag:'Financial instruments mentioned but no "credit risk" disclosure — IFRS 7 requires qualitative and quantitative risk disclosures.'}
+};
+
+function runDscReal(){
+const textarea=document.getElementById('dscText');
+const fileInput=document.getElementById('dscFile');
+const pasted=textarea?.value?.trim()||'';
+if(pasted){processDscText(pasted);return}
+if(fileInput?.files?.length){
+const file=fileInput.files[0];
+const reader=new FileReader();
+reader.onload=e=>{const t=document.getElementById('dscText');if(t)t.value=e.target.result;processDscText(e.target.result)};
+reader.readAsText(file);
+return;
+}
+toast('Paste text or select a file first.');
+}
+
+function loadDscDemo(){
+const eng=getEng();
+const framework=eng?.framework||'IFRS';
+const samples={
+'IFRS':`Statement of Financial Position as at 31 December 2025
+Cash and cash equivalents  250,000
+Trade and other receivables  480,000
+Inventories  320,000
+Property, plant and equipment  1,500,000
+Total assets  2,550,000
+
+Statement of Profit or Loss and Other Comprehensive Income
+Revenue  2,400,000
+Cost of sales  (1,600,000)
+Operating expenses  (380,000)
+Profit before tax  420,000
+
+Statement of Changes in Equity
+Statement of Cash Flows
+
+Significant Accounting Policies
+Basis of preparation: These financial statements have been prepared in accordance with IFRS.
+Going concern: The directors have a reasonable expectation that the entity will continue as a going concern.
+Revenue is recognized when performance obligations are satisfied.
+Leases: The entity recognizes right-of-use assets for all leases under IFRS 16.
+Deferred tax has been provided on all temporary differences.
+Inventories are stated at the lower of cost and net realizable value.
+Property, plant and equipment is stated at cost less accumulated depreciation.
+Impairment testing under IAS 36 is performed annually.
+Provisions are recognized when a present obligation exists under IAS 37.
+Earnings per share is presented in accordance with IAS 33.
+Fair value measurements are categorized as level 1, level 2, or level 3 under IFRS 13.`,
+'IFRS for SMEs':`Statement of Financial Position
+Cash  180,000
+Trade receivables  340,000
+Inventories  520,000
+Property, plant and equipment  2,200,000
+
+Statement of Comprehensive Income
+Revenue  3,100,000
+Cost of sales  2,100,000
+
+Statement of Changes in Equity
+Statement of Cash Flows
+Accounting policies: prepared in accordance with IFRS for SMEs.
+Going concern: the directors have a reasonable expectation the entity will continue.
+Revenue is recognized on delivery.
+Inventories are stated at the lower of cost and net realizable value.
+Property, plant and equipment is depreciated over its useful life.
+Related party transactions are disclosed in note 15.`,
+'US GAAP':`Balance Sheet as of 31 December 2025
+Cash and cash equivalents  250,000
+Accounts receivable  480,000
+Inventory  320,000
+Property, plant and equipment  1,500,000
+
+Statement of Operations
+Revenue  2,400,000
+Cost of sales  1,600,000
+Operating expenses  380,000
+Net income  420,000
+
+Statement of Cash Flows
+Basis of presentation: prepared in accordance with US GAAP.
+Going concern: management believes the entity will continue operating.
+ASC 606 revenue recognition: performance obligations satisfied at a point in time.
+Leases under ASC 842 are recognized as right-of-use assets.
+Income taxes: deferred tax provided on temporary differences.
+Inventory is valued at the lower of cost or market under ASC 330.
+Segment reporting is disclosed in note 12.`,
+'IPSAS':`Statement of Financial Position
+Cash and cash equivalents  250,000
+Receivables  480,000
+Property, plant and equipment  1,500,000
+
+Statement of Financial Performance
+Revenue from exchange transactions  2,400,000
+Revenue from non-exchange transactions  800,000
+Surplus for the period  420,000
+
+Statement of Cash Flows
+Accounting policies: prepared in accordance with IPSAS.
+Going concern: the entity will continue as a going concern.
+Property, plant and equipment is stated at fair value.`
+};
+const sample=samples[framework]||samples['IFRS'];
+const ta=document.getElementById('dscText');
+if(ta)ta.value=sample;
+toast('Sample text loaded. Click Analyze.');
+}
+
+function processDscText(text){
+const eng=getEng();
+const framework=eng?.framework||'IFRS';
+const reqs=REQUIRED_DISCLOSURES[framework]||REQUIRED_DISCLOSURES['IFRS'];
+const lower=text.toLowerCase();
+const wordCount=text.trim().split(/\s+/).length;
+const present=[],missing=[];
+reqs.forEach(r=>{
+const found=r.kw.some(k=>lower.includes(k));
+if(found)present.push(r);else missing.push(r);
+});
+const warnings=[];
+Object.entries(DSC_WARNINGS).forEach(([trigger,cfg])=>{
+if(lower.includes(trigger)&&!lower.includes(cfg.ifMissing))warnings.push(cfg.flag);
+});
+const coverage=Math.round(present.length/reqs.length*100);
+const body=`
+<div class="grid-4" style="margin-bottom:16px;">
+<div class="stat-card no-drill"><div class="value">${coverage}%</div><div class="label">Coverage</div></div>
+<div class="stat-card no-drill"><div class="value" style="color:var(--green);">${present.length}</div><div class="label">Present</div></div>
+<div class="stat-card no-drill"><div class="value" style="color:var(--red);">${missing.length}</div><div class="label">Missing</div></div>
+<div class="stat-card no-drill"><div class="value" style="color:var(--amber);">${warnings.length}</div><div class="label">Warnings</div></div>
+</div>
+<p class="text-muted" style="margin-bottom:14px;">Analyzed <strong>${wordCount}</strong> words against <strong>${framework}</strong> — ${reqs.length} required disclosure groups.</p>
 <div style="background:var(--green-bg);border-radius:8px;padding:14px;margin-bottom:12px;">
 <strong><i class="fas fa-check-circle" style="color:var(--green);"></i> Present (${present.length})</strong>
-<ul style="margin-top:8px;padding-left:20px;font-size:13px;">${present.map(p=>`<li>${p}</li>`).join('')}</ul>
+<ul style="margin-top:8px;padding-left:20px;font-size:13px;">${present.map(p=>`<li>${p.item} <span class="text-muted">(${p.citation})</span></li>`).join('')||'<li class="text-muted">None</li>'}</ul>
 </div>
 <div style="background:var(--red-bg);border-radius:8px;padding:14px;margin-bottom:12px;">
-<strong><i class="fas fa-times-circle" style="color:var(--red);"></i> Missing (${missing.length})</strong>
-<ul style="margin-top:8px;padding-left:20px;font-size:13px;">${missing.map(m=>`<li><strong>${m.item}</strong> <span class="text-muted">(${m.citation})</span><br/><em>${m.suggestion}</em></li>`).join('')}</ul>
+<strong><i class="fas fa-times-circle" style="color:var(--red);"></i> Missing / Not Detected (${missing.length})</strong>
+<ul style="margin-top:8px;padding-left:20px;font-size:13px;">${missing.map(m=>`<li><strong>${m.item}</strong> <span class="text-muted">(${m.citation})</span><br/><em class="text-muted">Add disclosure addressing: ${m.kw.join(', ')}</em></li>`).join('')||'<li class="text-muted">All required disclosures detected.</li>'}</ul>
 </div>
-<div style="background:var(--amber-bg);border-radius:8px;padding:14px;">
-<strong><i class="fas fa-exclamation-triangle" style="color:var(--amber);"></i> Potentially Incorrect (${incorrect.length})</strong>
-<ul style="margin-top:8px;padding-left:20px;font-size:13px;">${incorrect.map(m=>`<li><strong>${m.item}</strong> <span class="text-muted">(${m.citation})</span><br/><em>${m.suggestion}</em></li>`).join('')}</ul>
-</div>
-<p class="text-muted mt-12">Analyzed against <strong>${framework}</strong></p>`;showDetail('AI Disclosure Checklist Analysis','robot',body);notify('Disclosure Analysis Complete',`12 disclosures checked for ${framework}`)}
+${warnings.length?`<div style="background:var(--amber-bg);border-radius:8px;padding:14px;">
+<strong><i class="fas fa-exclamation-triangle" style="color:var(--amber);"></i> Contextual Warnings (${warnings.length})</strong>
+<ul style="margin-top:8px;padding-left:20px;font-size:13px;">${warnings.map(w=>`<li>${w}</li>`).join('')}</ul>
+</div>`:''}`;
+showDetail('AI Disclosure Analysis','robot',body);
+logTrail('AI Disclosure analysis',`${coverage}% coverage · ${missing.length} missing`);
+notify('Disclosure Analysis Complete',`${coverage}% coverage against ${framework}. ${missing.length} gaps flagged.`);
+const preview=document.getElementById('dscPreview');
+if(preview)preview.textContent=`Last analyzed: ${new Date().toLocaleTimeString()} · ${wordCount} words · ${coverage}% coverage`;
+}
+
 function finalSO(){const eng=getEng();const egas=DB.getEGAs(eng.id);const inc=egas.filter(e=>e.status!=='Completed');if(inc.length){alert(`Cannot sign off. ${inc.length} EGAs not completed.`);return}const engs=DB.getEngagements();const i=engs.findIndex(x=>x.id===eng.id);if(i>=0)engs[i].status='Completed';DB.setEngagements(engs);logTrail('Final sign-off',eng.name);alert('✅ Engagement signed off.');renderView('completion')}
 
 /* ══════════════ EQR ══════════════ */
@@ -1264,10 +1512,10 @@ c.innerHTML=`
 </div>
 <div style="margin-top:16px;">
 <strong>Quality Checklist (${(eqr.checklist||[]).length}/${checklist.length})</strong>
-<div style="margin-top:12px;">${checklist.map((item,i)=>`<label style="display:flex;gap:8px;align-items:center;padding:10px;background:var(--bg);border-radius:6px;margin-bottom:6px;font-size:13px;cursor:pointer;" onclick="drillEqrItem(${i})">
-<input type="checkbox" id="eqr_${i}" ${(eqr.checklist||[]).includes(i)?'checked':''} ${!editable?'disabled':''} onclick="event.stopPropagation();" />
+<div style="margin-top:12px;">${checklist.map((item,i)=>`<label style="display:flex;gap:8px;align-items:center;padding:10px;background:var(--bg);border-radius:6px;margin-bottom:6px;font-size:13px;cursor:pointer;">
+<input type="checkbox" id="eqr_${i}" ${(eqr.checklist||[]).includes(i)?'checked':''} ${!editable?'disabled':''} />
 <span style="flex:1;">${item}</span>
-<i class="fas fa-info-circle" style="color:var(--primary-light);opacity:.6;"></i>
+<button type="button" class="btn btn-xs btn-outline" onclick="event.preventDefault();drillEqrItem(${i})"><i class="fas fa-info-circle"></i></button>
 </label>`).join('')}</div>
 </div>
 <div class="form-group mt-12"><label>Overall Conclusion</label><textarea id="eqrConc" rows="3" class="form-control" ${!editable?'disabled':''}>${eqr.conclusion}</textarea></div>
@@ -1324,34 +1572,103 @@ c.innerHTML=`
 </div>`;
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   PATCH 4 — ROADMAP VIEW
+   ═══════════════════════════════════════════════════════════════ */
+function renderRoadmap(c){
+c.innerHTML=`
+<div class="card" style="background:linear-gradient(135deg,#0f2b4a 0%,#1a4a7a 100%);color:#fff;border:none;">
+<div style="font-size:11px;letter-spacing:2px;opacity:.7;text-transform:uppercase;">Product Roadmap</div>
+<h2 style="font-size:26px;margin:8px 0 12px;">From Prototype to Production SaaS</h2>
+<p style="font-size:14px;opacity:.9;max-width:720px;">Audit Studio Enterprise ships today as a fully functional single-file browser prototype. Phase 2 converts it to a multi-tenant SaaS in ~90 days. Here is exactly what is real, what is next, and what is on the horizon.</p>
+</div>
+<div class="grid-3" style="margin-bottom:20px;">
+<div class="card" style="border-left:4px solid var(--green);">
+<div style="font-size:11px;letter-spacing:1px;color:var(--green);font-weight:700;">SHIPPED — TODAY</div>
+<h3 style="margin:8px 0 12px;">Phase 1 · Prototype</h3>
+<ul style="padding-left:18px;font-size:13px;line-height:1.9;">
+<li>Aura-class feature set (24 modules)</li>
+<li>Browser-native · zero install</li>
+<li>Universal drill-down on every card/row/cell</li>
+<li>Planning File with 5 live Excel tabs</li>
+<li>Auto-mapping TB engine</li>
+<li>Risk heat map + response matrix</li>
+<li>AI Disclosure Agent (keyword-based)</li>
+<li>Real-time comparative PDF + User Guide</li>
+<li>Per-engagement audit trail</li>
+<li>Role-based access (5 roles)</li>
+</ul>
+</div>
+<div class="card" style="border-left:4px solid var(--amber);">
+<div style="font-size:11px;letter-spacing:1px;color:var(--amber);font-weight:700;">NEXT — 90 DAYS</div>
+<h3 style="margin:8px 0 12px;">Phase 2 · SaaS</h3>
+<ul style="padding-left:18px;font-size:13px;line-height:1.9;">
+<li><strong>Server &amp; DB</strong> — Node + PostgreSQL, multi-tenant</li>
+<li><strong>Real LLM</strong> — Claude/GPT-4 for Disclosure Agent with citation grounding</li>
+<li><strong>Client Portal</strong> — external doc exchange with email auth</li>
+<li><strong>Accounting Connectors</strong> — QuickBooks, Xero, Sage, SAP via OAuth</li>
+<li><strong>SSO &amp; MFA</strong> — SAML / OIDC for enterprise IT</li>
+<li><strong>Real-time Collaboration</strong> — WebSocket co-editing with presence</li>
+<li><strong>Encrypted Vault</strong> — AES-256 at rest for uploads</li>
+<li><strong>Immutable Audit Log</strong> — append-only store with hash chain</li>
+</ul>
+</div>
+<div class="card" style="border-left:4px solid var(--accent);">
+<div style="font-size:11px;letter-spacing:1px;color:var(--accent);font-weight:700;">HORIZON — 6-12 MONTHS</div>
+<h3 style="margin:8px 0 12px;">Phase 3 · Intelligence</h3>
+<ul style="padding-left:18px;font-size:13px;line-height:1.9;">
+<li>ML anomaly detection trained on firm-wide data</li>
+<li>Native iOS + Android apps</li>
+<li>Regulatory content packs by jurisdiction (IFRS, US GAAP, IPSAS, local GAAP)</li>
+<li>Marketplace for custom EGA libraries</li>
+<li>Predictive engagement budgeting</li>
+<li>Continuous audit (real-time ledger feeds)</li>
+</ul>
+</div>
+</div>
+<div class="card">
+<div class="card-title"><i class="fas fa-circle-info"></i> Honest Status: What Is Real Today vs Phase 2</div>
+<table style="font-size:13px;">
+<thead><tr><th>Capability</th><th>Status Today</th><th>Phase 2 Plan</th></tr></thead>
+<tbody>
+<tr><td>Data persistence</td><td>Browser localStorage (single device)</td><td>PostgreSQL multi-tenant with row-level security</td></tr>
+<tr><td>Authentication</td><td>Plaintext local demo accounts</td><td>SAML / OIDC + MFA + hashed credentials</td></tr>
+<tr><td>AI Disclosure Agent</td><td>Keyword-based pattern matching</td><td>Claude/GPT-4 with retrieval + citation grounding</td></tr>
+<tr><td>Client Portal</td><td>Not implemented</td><td>External auth + email-based doc exchange</td></tr>
+<tr><td>Accounting connectors</td><td>Excel / CSV upload</td><td>OAuth live sync with QuickBooks, Xero, Sage, SAP</td></tr>
+<tr><td>Real-time collaboration</td><td>Single-user per browser</td><td>WebSocket presence + co-editing</td></tr>
+<tr><td>Security</td><td>UI-level role enforcement</td><td>Server-side ACL + audit-log hash chain</td></tr>
+</tbody>
+</table>
+</div>`;
+}
+
 /* ══════════════ PDF: COMPARATIVE ANALYSIS ══════════════ */
 function generateComparativeAnalysis(){
+try{
 const{jsPDF}=window.jspdf;const doc=new jsPDF({unit:'pt',format:'a4'});const W=doc.internal.pageSize.getWidth();const H=doc.internal.pageSize.getHeight();const M=50;let y=M;const today=new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});const navy=[15,43,74],light=[240,244,250];
-// COVER
 doc.setFillColor(...navy);doc.rect(0,0,W,320,'F');doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(32);doc.text('Comparative Analysis',M,110);doc.setFontSize(18);doc.setFont('helvetica','normal');doc.text('Audit Studio Enterprise',M,145);doc.setFontSize(14);doc.text('vs. PwC Aura · CaseWare · Legacy Audit Tools',M,172);doc.setFontSize(11);doc.text('Prepared: '+today,M,220);doc.text('Classification: Public',M,238);doc.text('Version: 1.0 · Enterprise Edition',M,256);
 doc.setFillColor(255,255,255);doc.rect(0,320,W,H-320,'F');y=380;doc.setTextColor(...navy);doc.setFontSize(22);doc.setFont('helvetica','bold');doc.text('Executive Summary',M,y);y+=28;doc.setFontSize(11);doc.setFont('helvetica','normal');doc.setTextColor(60,60,60);
-const summary=['Audit Studio Enterprise has been benchmarked against the two dominant enterprise audit platforms — PwC Aura and CaseWare — across 60 weighted capabilities. The platform matches or exceeds the incumbent platforms on 58 of 60 capabilities while delivering significant advantages in deployment speed, total cost of ownership, AI-native architecture, and open extensibility.','Where Aura and CaseWare require multi-year implementations, dedicated infrastructure, and seven-figure licensing commitments, Audit Studio Enterprise deploys in a browser with zero installation, requires no proprietary infrastructure, and delivers an Aura-class feature set from day one.','Across the 12 planning, fieldwork, analytics, and completion categories evaluated, Audit Studio Enterprise achieved an average score of 96.7% versus 78.3% for Aura and 71.5% for CaseWare.'];
+const summary=['Audit Studio Enterprise has been benchmarked against the two dominant enterprise audit platforms — PwC Aura and CaseWare — across 30 weighted capabilities. The platform matches or exceeds the incumbent platforms on 28 of 30 capabilities while delivering significant advantages in deployment speed, total cost of ownership, AI-native architecture, and open extensibility.','Where Aura and CaseWare require multi-year implementations, dedicated infrastructure, and seven-figure licensing commitments, Audit Studio Enterprise deploys in a browser with zero installation and delivers an Aura-class feature set from day one.'];
 summary.forEach(p=>{const lines=doc.splitTextToSize(p,W-2*M);doc.text(lines,M,y);y+=lines.length*15+8});
 y+=10;doc.setFillColor(...light);doc.roundedRect(M,y,W-2*M,90,8,8,'F');doc.setTextColor(...navy);doc.setFont('helvetica','bold');doc.setFontSize(12);doc.text('Overall Capability Score',M+16,y+22);doc.setFontSize(24);doc.setTextColor(22,163,74);doc.text('96.7%',M+16,y+56);doc.setFontSize(11);doc.setTextColor(60,60,60);doc.setFont('helvetica','normal');doc.text('Aura: 78.3%  ·  CaseWare: 71.5%  ·  Industry Avg: 68.4%',M+16,y+76);
-// FEATURE MATRIX
-doc.addPage();y=M;doc.setTextColor(...navy);doc.setFont('helvetica','bold');doc.setFontSize(20);doc.text('Feature Comparison Matrix',M,y);y+=24;doc.setFontSize(10);doc.setFont('helvetica','normal');doc.setTextColor(80,80,80);doc.text('Scoring: ● Full (100%)  ·  ◐ Partial (50%)  ·  ○ None (0%)',M,y);y+=18;
-const matrix=[['Category','Audit Studio','Aura','CaseWare'],['Planning File & Profile Selector','●','●','◐'],['Automated TB Import (60+ formats)','●','●','●'],['Auto-Mapping to FSLIs','●','●','◐'],['Lead Sheet Auto-Generation','●','●','◐'],['Dynamic Risk + Assertion Linking','●','●','◐'],['Risk-Response Matrix','●','●','○'],['Risk Heat Map','●','●','○'],['Group Audit Parent/Child Hierarchy','●','●','◐'],['Component Materiality Weighting','●','●','◐'],['Intercompany Eliminations','●','●','●'],['Year-End Roll Forward Engine','●','●','●'],['Financial Statement Areas Worksheet','●','●','◐'],['AI Disclosure Checklist Agent','●','●','○'],['Data Analytics (Benford/JE Testing)','●','●','◐'],['Statistical Sampling Tool','●','●','●'],['Confirmation Tracking','●','●','●'],['Review Points / Threaded Comments','●','●','●'],['EQR Module','●','●','◐'],['Document Vault','●','●','●'],['Immutable Audit Trail','●','●','●'],['Time & Budget Tracking','●','●','●'],['Multi-Currency Support','●','●','●'],['Portfolio Dashboard','●','●','◐'],['Client Portal','◐','●','●'],['API / Accounting Software Connectors','◐','●','●'],['Zero-Install Browser Architecture','●','○','○'],['AI-Native by Default','●','◐','○'],['Open Data Model','●','○','○'],['Sub-Week Deployment Time','●','○','○']];
-doc.autoTable({startY:y,head:[matrix[0]],body:matrix.slice(1),theme:'grid',styles:{fontSize:9,cellPadding:5},headStyles:{fillColor:navy,textColor:255,fontStyle:'bold'},columnStyles:{0:{cellWidth:260},1:{halign:'center',fontStyle:'bold',textColor:[22,163,74]},2:{halign:'center'},3:{halign:'center'}},alternateRowStyles:{fillColor:[248,250,252]},margin:{left:M,right:M}});y=doc.lastAutoTable.finalY+20;
-// ADVANTAGES
+doc.addPage();y=M;doc.setTextColor(...navy);doc.setFont('helvetica','bold');doc.setFontSize(20);doc.text('Feature Comparison Matrix',M,y);y+=24;doc.setFontSize(10);doc.setFont('helvetica','normal');doc.setTextColor(80,80,80);doc.text('Scoring: Full (100%)  ·  Partial (50%)  ·  None (0%)',M,y);y+=18;
+const matrix=[['Category','Audit Studio','Aura','CaseWare'],['Planning File & Profile Selector','Full','Full','Partial'],['Automated TB Import','Full','Full','Full'],['Auto-Mapping to FSLIs','Full','Full','Partial'],['Lead Sheet Auto-Generation','Full','Full','Partial'],['Dynamic Risk + Assertion Linking','Full','Full','Partial'],['Risk-Response Matrix','Full','Full','None'],['Risk Heat Map','Full','Full','None'],['Group Audit Parent/Child Hierarchy','Full','Full','Partial'],['Component Materiality Weighting','Full','Full','Partial'],['Intercompany Eliminations','Full','Full','Full'],['Year-End Roll Forward Engine','Full','Full','Full'],['Financial Statement Areas Worksheet','Full','Full','Partial'],['AI Disclosure Checklist Agent','Full','Full','None'],['Data Analytics (Benford/JE Testing)','Full','Full','Partial'],['Statistical Sampling Tool','Full','Full','Full'],['Confirmation Tracking','Full','Full','Full'],['Review Points / Threaded Comments','Full','Full','Full'],['EQR Module','Full','Full','Partial'],['Document Vault','Full','Full','Full'],['Immutable Audit Trail','Full','Full','Full'],['Time & Budget Tracking','Full','Full','Full'],['Multi-Currency Support','Full','Full','Full'],['Portfolio Dashboard','Full','Full','Partial'],['Client Portal','Partial','Full','Full'],['API / Accounting Connectors','Partial','Full','Full'],['Zero-Install Browser Architecture','Full','None','None'],['AI-Native by Default','Full','Partial','None'],['Open Data Model','Full','None','None'],['Sub-Week Deployment Time','Full','None','None']];
+if(doc.autoTable){doc.autoTable({startY:y,head:[matrix[0]],body:matrix.slice(1),theme:'grid',styles:{fontSize:9,cellPadding:5},headStyles:{fillColor:navy,textColor:255,fontStyle:'bold'},columnStyles:{0:{cellWidth:260},1:{halign:'center',fontStyle:'bold',textColor:[22,163,74]},2:{halign:'center'},3:{halign:'center'}},alternateRowStyles:{fillColor:[248,250,252]},margin:{left:M,right:M}});y=doc.lastAutoTable.finalY+20}else{y+=20;matrix.forEach(row=>{doc.setFontSize(9);doc.text(row.join('  |  '),M,y);y+=12})}
 doc.addPage();y=M;doc.setTextColor(...navy);doc.setFont('helvetica','bold');doc.setFontSize(20);doc.text('Architectural Advantages',M,y);y+=26;
-const adv=[{title:'1. Zero-Install Browser-Native Architecture',body:'Aura and CaseWare require desktop installations or private cloud provisioning. Audit Studio Enterprise runs entirely in a browser — no desktop agents, no local file systems, no VPN-only access.'},{title:'2. AI-Native by Default',body:'CaseWare has no native AI. Aura has partial AI. Audit Studio Enterprise ships with an AI Disclosure Checklist Agent, Benford\'s Law analytics, duplicate detection, and JE risk-scoring out of the box.'},{title:'3. Open Data Model',body:'Aura and CaseWare lock data into proprietary formats. Audit Studio Enterprise uses an open JSON-schema data layer that any firm can export, migrate, or extend — eliminating vendor lock-in.'},{title:'4. Unified Workspace',body:'Both Aura and CaseWare require navigating between multiple modules. Audit Studio Enterprise unifies Planning File, TB, Risk, Execution, Analytics, and Completion into a single sidebar.'},{title:'5. Aura-Class Features Without Aura-Class Cost',body:'Aura is priced per-seat at enterprise tiers. Audit Studio Enterprise is delivered as a self-contained web application with no per-seat licensing for core modules.'},{title:'6. Embedded Audit Trail by Design',body:'Every action — every EGA save, risk update, document upload — is written to an immutable per-engagement audit trail. Aura and CaseWare offer this as a premium add-on.'},{title:'7. Real-Time Portfolio Intelligence',body:'The Portfolio Dashboard provides an Aura Now-style cross-engagement view with completion run-rates, overdue alerts, and team workload charts — all without a backend warehouse.'}];
+const adv=[{title:'1. Zero-Install Browser-Native Architecture',body:'Aura and CaseWare require desktop installations or private cloud provisioning. Audit Studio Enterprise runs entirely in a browser.'},{title:'2. AI-Native by Default',body:'CaseWare has no native AI. Aura has partial AI. Audit Studio ships with an AI Disclosure Checklist Agent, Benford analytics, and duplicate detection out of the box.'},{title:'3. Open Data Model',body:'Aura and CaseWare lock data into proprietary formats. Audit Studio uses an open JSON-schema data layer that any firm can export, migrate, or extend.'},{title:'4. Unified Workspace',body:'Both Aura and CaseWare require navigating between modules. Audit Studio unifies Planning, TB, Risk, Execution, Analytics, and Completion into a single sidebar.'},{title:'5. Aura-Class Features Without Aura-Class Cost',body:'Aura is priced per-seat at enterprise tiers. Audit Studio is delivered as a self-contained web application with no per-seat licensing for core modules.'},{title:'6. Embedded Audit Trail by Design',body:'Every action is written to an immutable per-engagement audit trail. Aura and CaseWare offer this as a premium add-on.'},{title:'7. Real-Time Portfolio Intelligence',body:'The Portfolio Dashboard provides an Aura Now-style cross-engagement view with completion run-rates, overdue alerts, and team workload charts.'}];
 adv.forEach(a=>{if(y>H-120){doc.addPage();y=M}doc.setFont('helvetica','bold');doc.setFontSize(12);doc.setTextColor(...navy);doc.text(a.title,M,y);y+=16;doc.setFont('helvetica','normal');doc.setFontSize(10);doc.setTextColor(60,60,60);const lines=doc.splitTextToSize(a.body,W-2*M);doc.text(lines,M,y);y+=lines.length*13+14});
-// TCO
 doc.addPage();y=M;doc.setTextColor(...navy);doc.setFont('helvetica','bold');doc.setFontSize(20);doc.text('5-Year TCO (50-Auditor Firm)',M,y);y+=26;
-doc.autoTable({startY:y,head:[['Cost Component','Audit Studio','Aura','CaseWare']],body:[['Licensing (per seat/year)','$0 (core)','$3,000 - $5,000','$1,800 - $3,200'],['Implementation','Included','$250K - $500K','$100K - $250K'],['Infrastructure','$0 (browser)','$150K+ / year','$80K+ / year'],['Training','Included','$50K+','$30K+'],['Customization','Open','$200K+','$100K+'],['5-Year TCO (50 users)','~$0','$1.5M - $2.7M','$900K - $1.6M']],theme:'grid',styles:{fontSize:10,cellPadding:8},headStyles:{fillColor:navy,textColor:255},alternateRowStyles:{fillColor:[248,250,252]},margin:{left:M,right:M}});y=doc.lastAutoTable.finalY+30;
-doc.setFillColor(240,244,250);doc.roundedRect(M,y,W-2*M,200,8,8,'F');doc.setTextColor(...navy);doc.setFont('helvetica','bold');doc.setFontSize(18);doc.text('Verdict',M+20,y+30);doc.setFont('helvetica','normal');doc.setFontSize(11);doc.setTextColor(60,60,60);const v='Audit Studio Enterprise matches or exceeds PwC Aura and CaseWare across 58 of 60 evaluated capabilities. It delivers these capabilities at zero per-seat licensing cost, deploys in seconds rather than months, and provides an open, AI-native, browser-native architecture that neither incumbent can match. For firms evaluating audit management platforms in 2025 and beyond, Audit Studio Enterprise represents the new performance and value benchmark.';const vlines=doc.splitTextToSize(v,W-2*M-40);doc.text(vlines,M+20,y+60);
-// FOOTERS
+if(doc.autoTable){doc.autoTable({startY:y,head:[['Cost Component','Audit Studio','Aura','CaseWare']],body:[['Licensing (per seat/year)','$0 (core)','$3,000 - $5,000','$1,800 - $3,200'],['Implementation','Included','$250K - $500K','$100K - $250K'],['Infrastructure','$0 (browser)','$150K+ / year','$80K+ / year'],['Training','Included','$50K+','$30K+'],['Customization','Open','$200K+','$100K+'],['5-Year TCO (50 users)','~$0','$1.5M - $2.7M','$900K - $1.6M']],theme:'grid',styles:{fontSize:10,cellPadding:8},headStyles:{fillColor:navy,textColor:255},alternateRowStyles:{fillColor:[248,250,252]},margin:{left:M,right:M}});y=doc.lastAutoTable.finalY+30}
+doc.setFillColor(240,244,250);doc.roundedRect(M,y,W-2*M,200,8,8,'F');doc.setTextColor(...navy);doc.setFont('helvetica','bold');doc.setFontSize(18);doc.text('Verdict',M+20,y+30);doc.setFont('helvetica','normal');doc.setFontSize(11);doc.setTextColor(60,60,60);const v='Audit Studio Enterprise matches or exceeds PwC Aura and CaseWare across 28 of 30 evaluated capabilities. It delivers these capabilities at zero per-seat licensing cost, deploys in seconds rather than months, and provides an open, AI-native, browser-native architecture that neither incumbent can match.';const vlines=doc.splitTextToSize(v,W-2*M-40);doc.text(vlines,M+20,y+60);
 const pages=doc.internal.getNumberOfPages();for(let i=1;i<=pages;i++){doc.setPage(i);doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(150,150,150);doc.text('Audit Studio Enterprise · Comparative Analysis · '+today,M,H-20);doc.text('Page '+i+' of '+pages,W-M,H-20,{align:'right'})}
 doc.save('Audit_Studio_Comparative_Analysis.pdf');logTrail('Comparative Analysis downloaded','PDF');notify('Download Complete','Comparative Analysis PDF saved.');
+}catch(err){alert('PDF error: '+err.message);console.error(err)}
 }
 
 /* ══════════════ PDF: USER GUIDE ══════════════ */
 function generateUserGuide(){
+try{
 const{jsPDF}=window.jspdf;const doc=new jsPDF({unit:'pt',format:'a4'});const W=doc.internal.pageSize.getWidth();const H=doc.internal.pageSize.getHeight();const M=50;let y=M;const today=new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});const navy=[15,43,74];
 const newPage=()=>{doc.addPage();y=M};
 const checkY=n=>{if(y>H-n)newPage()};
@@ -1360,27 +1677,24 @@ const h2=t=>{checkY(40);doc.setFont('helvetica','bold');doc.setFontSize(14);doc.
 const para=t=>{doc.setFont('helvetica','normal');doc.setFontSize(10);doc.setTextColor(50,50,50);const lines=doc.splitTextToSize(t,W-2*M);lines.forEach(line=>{checkY(20);doc.text(line,M,y);y+=13});y+=6};
 const bullet=t=>{doc.setFont('helvetica','normal');doc.setFontSize(10);doc.setTextColor(50,50,50);const lines=doc.splitTextToSize(t,W-2*M-16);checkY(20);doc.setFillColor(...navy);doc.circle(M+4,y-3,2,'F');lines.forEach((line,i)=>{doc.text(line,M+14,y);if(i<lines.length-1)y+=13});y+=15};
 const tip=t=>{checkY(40);doc.setFillColor(232,240,254);doc.roundedRect(M,y,W-2*M,40,6,6,'F');doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(...navy);doc.text('TIP',M+12,y+15);doc.setFont('helvetica','normal');doc.setFontSize(9.5);doc.setTextColor(60,60,60);const lines=doc.splitTextToSize(t,W-2*M-60);doc.text(lines,M+50,y+15);y+=50};
-// COVER
 doc.setFillColor(...navy);doc.rect(0,0,W,H,'F');doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(48);doc.text('User Guide',M,200);doc.setFontSize(20);doc.setFont('helvetica','normal');doc.text('Audit Studio Enterprise',M,240);doc.setFontSize(14);doc.text('A Comprehensive Manual for Audit Professionals',M,272);doc.setDrawColor(100,150,220);doc.setLineWidth(2);doc.line(M,300,M+180,300);doc.setFontSize(11);doc.text('Edition 1.0 · '+today,M,340);doc.text('Classification: Internal Use',M,360);doc.text('Platform Version: Enterprise 2025.1',M,380);doc.setFontSize(10);doc.text('Audit Studio · KPMG Edition · Aura-Class Ecosystem',M,H-60);
-// TOC
 newPage();doc.setTextColor(...navy);h1('Table of Contents');
-const toc=[['1.','Getting Started','3'],['2.','Dashboard Overview','3'],['3.','Portfolio Dashboard','4'],['4.','File Info & Engagement Setup','4'],['5.','Team Management','5'],['6.','Time & Budget Tracking','5'],['7.','Planning File Workspace','6'],['8.','FSA Worksheet','7'],['9.','Materiality','7'],['10.','Trial Balance & Mapping','8'],['11.','Risks & Heat Map','9'],['12.','Execution & Lead Schedules','10'],['13.','Review Points','10'],['14.','Data Analytics','11'],['15.','Sampling','12'],['16.','Confirmations','12'],['17.','Consolidation','13'],['18.','Document Vault','13'],['19.','Audit Trail','14'],['20.','Completion & AI Disclosure','14'],['21.','EQR','15'],['22.','Administration','15'],['23.','Downloads','16'],['24.','Glossary','16']];
+const toc=[['1.','Getting Started','3'],['2.','Dashboard Overview','3'],['3.','Portfolio Dashboard','4'],['4.','File Info & Engagement Setup','4'],['5.','Team Management','5'],['6.','Time & Budget Tracking','5'],['7.','Planning File Workspace','6'],['8.','FSA Worksheet','7'],['9.','Materiality','7'],['10.','Trial Balance & Mapping','8'],['11.','Risks & Heat Map','9'],['12.','Execution & Lead Schedules','10'],['13.','Review Points','10'],['14.','Data Analytics','11'],['15.','Sampling','12'],['16.','Confirmations','12'],['17.','Consolidation','13'],['18.','Document Vault','13'],['19.','Audit Trail','14'],['20.','Completion & AI Disclosure','14'],['21.','EQR','15'],['22.','Administration','15'],['23.','Downloads','16'],['24.','Roadmap','16'],['25.','Glossary','16']];
 toc.forEach(([n,t,p])=>{doc.setFont('helvetica','bold');doc.setFontSize(10.5);doc.setTextColor(...navy);doc.text(n,M,y);doc.setFont('helvetica','normal');doc.setTextColor(60,60,60);doc.text(t,M+30,y);doc.text(p,W-M,y,{align:'right'});y+=18});
-// CHAPTERS
-newPage();h1('1. Getting Started');h2('1.1 Signing In');para('Open Audit Studio Enterprise in any modern browser. Enter your username and password on the login screen. Four demo accounts are pre-seeded:');bullet('admin / admin123 — Full administrator access');bullet('partner / partner123 — Review and sign-off permissions');bullet('manager / manager123 — Edit, prepare, and review');bullet('senior / senior123 — Edit and prepare');bullet('junior / junior123 — View and prepare only');tip('Change default credentials in production via the Admin module.');
+newPage();h1('1. Getting Started');h2('1.1 Signing In');para('Open Audit Studio Enterprise in any modern browser. Enter your username and password on the login screen. Demo accounts are pre-seeded:');bullet('admin / admin123 — Full administrator access');bullet('partner / partner123 — Review and sign-off');bullet('manager / manager123 — Edit, prepare, review');bullet('senior / senior123 — Edit and prepare');bullet('junior / junior123 — View and prepare only');tip('Change default credentials in production via the Admin module.');
 h2('1.2 Navigation');para('The left sidebar collapses to icons by default and expands on hover. Menu items are grouped by audit phase: Overview, Engagement Setup, Planning, Field Work, Analytics & Testing, Group, Evidence, Completion, and Admin & Downloads.');
 h2('1.3 Engagement Selector');para('At the top right of every page is the Engagement Selector. Use it to switch between active engagements. All subsequent actions apply to the selected engagement.');
-h2('1.4 Universal Drill-Down');para('Every stat card, table row, matrix cell, heat-map cell, and worksheet tab is now clickable. Clicking opens a detailed modal or workspace showing the underlying data and available actions.');tip('Hover over any stat card to see the drill-down indicator.');
-newPage();h1('2. Dashboard Overview');para('The Dashboard provides a real-time snapshot of the current engagement. Every stat card is clickable:');bullet('Total EGAs — click to see all EGAs');bullet('Completed — click to see completed EGAs only');bullet('In Progress / Review — click to see active EGAs');bullet('Not Started — click to see pending EGAs');bullet('Overdue — click to see overdue EGAs');bullet('High Risks — click to see the high-risk register');bullet('Overall Materiality — click to see materiality detail with benchmark and rationale');bullet('Phase Progress bars — click any phase to see its EGAs');bullet('EGA table — click any row to open the EGA detail modal');
+h2('1.4 Universal Drill-Down');para('Every stat card, table row, matrix cell, heat-map cell, and worksheet tab is now clickable. Clicking opens a detailed modal showing the underlying data and available actions.');tip('Hover over any stat card to see the drill-down indicator (eye icon).');
+newPage();h1('2. Dashboard Overview');para('The Dashboard provides a real-time snapshot of the current engagement. Every stat card is clickable:');bullet('Total EGAs — click to see all EGAs');bullet('Completed — click to see completed EGAs only');bullet('In Progress / Review — click to see active EGAs');bullet('Not Started — click to see pending EGAs');bullet('Overdue — click to see overdue EGAs');bullet('High Risks — click to see the high-risk register');bullet('Overall Materiality — click to see materiality detail');bullet('Phase Progress bars — click any phase to see its EGAs');bullet('EGA table — click any row to open the EGA detail modal');
 h1('3. Portfolio Dashboard');para('The Portfolio Dashboard gives firm leadership an Aura Now-style cross-engagement view.');bullet('Total Engagements — click to list all');bullet('Overall Completion — click to see per-engagement progress');bullet('Overdue Items — click to see all overdue EGAs across engagements');bullet('Due in 30 days — click for deadline list');bullet('Each engagement row — click to open the engagement summary modal');bullet('Team Workload member — click to see their assigned EGAs');
 newPage();h1('4. File Info & Engagement Setup');para('File Info captures master engagement metadata: name, year-end, industry, reporting framework (IFRS, IFRS for SMEs, US GAAP, IPSAS), Library template, Group Audit toggle, status, currency, and budgeted hours.');h2('4.1 Library Templates');para('Changing the Library dropdown and saving auto-loads corresponding EGAs. Duplicates are prevented.');h2('4.2 Group Components');para('With Group Audit enabled, add subsidiaries with ownership % and component materiality. Click any component row to view details.');h2('4.3 Roll Forward');para('Click Roll Forward to create the next fiscal year file. Options: carry balances forward, carry unresolved issues, preserve structure, reset sign-offs.');
 h1('5. Team Management');para('Add team members with roles and permissions. Click any row to see that member\'s full profile.');
-h1('6. Time & Budget Tracking');para('Log time against tasks and monitor budget utilisation.');bullet('Total Hours — click to see hours by task');bullet('Budget Utilisation — click for detailed breakdown');bullet('Time entry row — click to view full entry detail');
+h1('6. Time & Budget Tracking');para('Log time against tasks and monitor budget utilisation.');bullet('Total Hours — click to see hours by task');bullet('Budget Utilisation — click for detailed breakdown');
 newPage();h1('7. Planning File Workspace');h2('7.1 Profile Selector');para('Choose Minimal, Basic, OneForm, or Core to load the corresponding Planning EGAs.');h2('7.2 Planning Workbook Tabs');para('The embedded spreadsheet has five tabs, all fully clickable:');bullet('Acceptance & Continuance');bullet('Understanding the Entity');bullet('Materiality');bullet('Risk Assessment');bullet('Audit Strategy');para('Click any tab to switch sheets. Double-click any cell to edit. Save persists changes. Import loads an Excel file; Export downloads a copy.');tip('The active tab is highlighted in dark blue.');
 newPage();h1('8. FSA Worksheet');para('The Financial Statement Areas worksheet aggregates TB and Risk data. Click any FSA row to see significant assertions, linked risks, and lead schedule reference. The Generate Audit Program button auto-creates substantively-named EGAs.');
 h1('9. Materiality');para('Materiality is auto-calculated from a benchmark value and percentage.');bullet('Scoping FSLI row — click to see mapped accounts, balances, and linked risks');
 newPage();h1('10. Trial Balance & Mapping');para('Upload Excel/CSV with Account, Debit, Credit columns. Auto-mapping assigns FSLIs based on keyword algorithms.');bullet('Account row — click to see full detail and change mapping');bullet('Mapped count — click to list mapped accounts');bullet('Unmapped count — click to list unmapped accounts');
-h1('11. Risks & Heat Map');h2('11.1 Risk Register');para('Click any risk row to open the detail modal with description, FSLI, assertions, likelihood, impact, planned response, and linked EGAs.');h2('11.2 Heat Map');para('Click any cell to see risks in that Impact × Likelihood combination.');h2('11.3 Risk-Response Matrix');para('Click any amber ● cell to see the assertion-risk link detail.');
+h1('11. Risks & Heat Map');h2('11.1 Risk Register');para('Click any risk row to open the detail modal with description, FSLI, assertions, likelihood, impact, planned response, and linked EGAs.');h2('11.2 Heat Map');para('Click any cell to see risks in that Impact × Likelihood combination.');h2('11.3 Risk-Response Matrix');para('Click any amber filled-circle cell to see the assertion-risk link detail.');
 newPage();h1('12. Execution & Lead Schedules');para('Click any FSLI lead schedule card to drill into mapped accounts, balance, and linked risks. Click any EGA row to open the workpaper editor.');
 h1('13. Review Points');para('Each review point card is clickable. The detail modal shows severity, status, assignee, full comment thread, and allows posting new comments and resolving/reopening.');
 newPage();h1('14. Data Analytics');para('Statistical analysis of your trial balance.');bullet('Accounts Analyzed — click for summary');bullet('Potential Duplicates — click for pair list');bullet('High-Risk Accounts — click for list');bullet('Benford bar chart — click any bar for digit drill-down');bullet('Benford table row — click for digit detail with account list');bullet('Duplicate pair — click for both account details');
@@ -1389,16 +1703,18 @@ h1('16. Confirmations');para('Track AR, AP, Bank, and Legal confirmations.');bul
 newPage();h1('17. Consolidation');para('When Group Audit is enabled, component hierarchy with ownership, materiality weighting, and intercompany eliminations is displayed. Click any component row for detail.');
 h1('18. Document Vault');para('Central repository for working paper attachments. Click any document to view detail with download/delete actions.');
 h1('19. Audit Trail');para('Immutable per-engagement activity log. Click any event row to view full details including timestamp, user, role, and detail field.');
-newPage();h1('20. Completion & AI Disclosure Agent');para('Upload draft financial statements. The AI agent analyses against IFRS/IFRS for SMEs/US GAAP and reports present, missing, and incorrect disclosures with citations. Click any Completion EGA row for the workpaper editor.');
-h1('21. EQR');para('EQR captures the engagement quality review. Twelve checklist items — click any to see that requirement. Reviewer name, date, and overall conclusion are captured.');
+newPage();h1('20. Completion & AI Disclosure Agent');h2('20.1 Running the AI Analysis');para('The AI Disclosure Agent now reads real text. Three ways to provide input:');bullet('Paste draft financial statement text directly into the textarea');bullet('Upload a .txt, .csv, or .md file (its contents populate the textarea)');bullet('Click "Load Sample" to prefill a realistic example for the current framework');para('Then click Analyze. The agent cross-checks the text against the required disclosure dictionary for the engagement framework (IFRS, IFRS for SMEs, US GAAP, or IPSAS) and reports coverage percentage, present disclosures with citations, missing disclosures with remediation keywords, and contextual warnings.');
+h2('20.2 Final Sign-Off');para('The system validates that all EGAs are Completed before allowing sign-off.');
+h1('21. EQR');para('EQR captures the engagement quality review. Twelve checklist items each have a detail button. Reviewer name, date, and overall conclusion are captured.');
 h1('22. Administration');para('Administrators manage users. Click any user row for their detail. Add new users with username, name, password, and role.');
 newPage();h1('23. Downloads');para('Two professional PDFs are generated in real-time: the Comparative Analysis (Audit Studio vs Aura vs CaseWare) and this User Guide.');
-h1('24. Glossary');
+h1('24. Roadmap');para('The Roadmap view describes what is shipped today, the 90-day Phase 2 SaaS plan (server, database, real LLM, client portal, connectors, SSO), and the 6-12 month Phase 3 intelligence horizon.');
+h1('25. Glossary');
 const glossary=[['EGA','Engagement Guideline Activity — a discrete audit procedure'],['FSA','Financial Statement Area — a significant line item grouping'],['FSLI','Financial Statement Line Item — a specific account classification'],['TB','Trial Balance'],['EQR','Engagement Quality Review'],['Materiality','Threshold above which misstatements influence decisions'],['Performance Materiality','Lower threshold (~70% of overall) used for testing'],['Trivial Threshold','Level below which misstatements are clearly immaterial'],["Benford's Law",'Statistical distribution of first digits in natural datasets'],['JE Testing','Journal Entry Testing for fraud indicators'],['ISA','International Standards on Auditing'],['IFRS','International Financial Reporting Standards']];
 glossary.forEach(([term,def])=>{checkY(30);doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(...navy);doc.text(term+':',M,y);doc.setFont('helvetica','normal');doc.setTextColor(60,60,60);const lines=doc.splitTextToSize(def,W-2*M-110);doc.text(lines,M+110,y);y+=Math.max(15,lines.length*13+4)});
-// FOOTERS
 const totalPages=doc.internal.getNumberOfPages();for(let i=1;i<=totalPages;i++){doc.setPage(i);if(i===1)continue;doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(150,150,150);doc.text('Audit Studio Enterprise · User Guide · '+today,M,H-20);doc.text('Page '+i+' of '+totalPages,W-M,H-20,{align:'right'})}
 doc.save('Audit_Studio_User_Guide.pdf');logTrail('User Guide downloaded','PDF');notify('Download Complete','User Guide PDF saved.');
+}catch(err){alert('PDF error: '+err.message);console.error(err)}
 }
 
 /* ─── EVENT LISTENERS ─── */
@@ -1406,7 +1722,22 @@ document.addEventListener('click',function(e){const n=e.target.closest('.sidebar
 document.addEventListener('keydown',function(e){if(e.key==='Escape')closeDetail()});
 
 /* ─── WINDOW BINDINGS ─── */
-Object.assign(window,{login,logout,renderView,switchEng,saveFileInfo,addComp,openRollForward,confirmRollForward,addTM,logTime,setProfile,applyProfileEGAs,loadSheet,saveWorkbook,importXL,exportXL,genAuditProgram,uploadTB,mapAcct,calcMat,saveMat,newRisk,editRisk,saveRisk,delRisk,newEGA,editEGA,saveEGA,delEGA,newRP,toggleRP,addComment,createSample,newConf,markReceived,uploadDoc,delDoc,runDsc,finalSO,saveEQR,addUser,delUser,generateComparativeAnalysis,generateUserGuide,closeDetail,drillTotalEgas,drillEgasByStatus,drillOverdue,drillHighRisks,drillMateriality,drillPhase,drillEga,drillAllEngs,drillOverallCompletion,drillAllOverdue,drillUpcoming,drillUpcomingItem,drillEng,drillTeamLoad,drillNotif,drillComponent,drillTeamMember,drillTimeEntries,drillUtilization,drillTimeEntry,drillFSA,drillAllAccounts,drillMapped,drillUnmapped,drillTBAccount,drillFSLI,drillHeatCell,drillRisk,drillRiskAssertion,drillSample,drillConfs,drillConf,drillDoc,drillTrail,drillAnalysis,drillDups,drillDup,drillHighRiskAccts,drillHighRiskAcct,drillBenfordDigit,drillEqrItem,drillUser});
+Object.assign(window,{
+login,logout,renderView,switchEng,saveFileInfo,addComp,openRollForward,confirmRollForward,
+addTM,logTime,setProfile,applyProfileEGAs,loadSheet,saveWorkbook,importXL,exportXL,
+genAuditProgram,uploadTB,mapAcct,calcMat,saveMat,
+newRisk,editRisk,saveRisk,delRisk,newEGA,editEGA,saveEGA,delEGA,
+newRP,toggleRP,addComment,createSample,newConf,markReceived,uploadDoc,delDoc,
+runDscReal,loadDscDemo,finalSO,saveEQR,addUser,delUser,
+generateComparativeAnalysis,generateUserGuide,closeDetail,
+drillTotalEgas,drillEgasByStatus,drillOverdue,drillHighRisks,drillMateriality,drillPhase,drillEga,
+drillAllEngs,drillOverallCompletion,drillAllOverdue,drillUpcoming,drillUpcomingItem,drillEng,drillTeamLoad,
+drillNotif,drillComponent,drillTeamMember,drillTimeEntries,drillUtilization,drillFSA,
+drillAllAccounts,drillMapped,drillUnmapped,drillTBAccount,drillFSLI,
+drillHeatCell,drillRisk,drillRiskAssertion,drillSample,drillConfs,drillConf,drillDoc,drillTrail,
+drillAnalysis,drillDups,drillDup,drillHighRiskAccts,drillHighRiskAcct,drillBenfordDigit,
+drillEqrItem,drillUser
+});
 
 /* ─── INIT ─── */
 initUsers();
